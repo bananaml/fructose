@@ -1,18 +1,20 @@
-from fructose.llm_agent import LLMAgent, SystemInstructions, BasicPrompt
+from fructose import AI
 
-system = SystemInstructions("Given a list of words return a word describing the theme")
+@AI()
+def get_theme(words: list[str]) -> str:
+  """
+  This function takes a list of words and returns a theme.
+  """
 
-input_format = list[str]
+theme = get_theme(["cat", "dog", "bird"])
 
-response_format = str
 
-my_agent = LLMAgent(
-    system_template=system,
-    prompt=BasicPrompt(),
-    input_format=input_format,
-    response_format=response_format,
-)
+print("---- Evaluating the result ----")
 
-result = my_agent([["apple", "banana", "cherry"]])
-print(result) # outputs "fruits"
+print("Theme:\t\t", theme)
+# assert theme == "animals" # not deterministic
+
+print("Type:\t\t", type(theme))
+assert type(theme) == str
+
 
