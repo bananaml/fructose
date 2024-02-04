@@ -1,6 +1,4 @@
-# fructose
-
-### Running LLMs as strongly-typed functions
+# Fructose: LLM calls as strongly-typed functions
 
 Implement LLM calls as python functions, using the docstring and type signatures to establish the API.
 ```
@@ -17,6 +15,7 @@ print(theme) # animals
 ```
 The @AI() decorator introspects the function and builds a prompt to an LLM to perform the task whenever the function is invoked.
 
+---
 ### To develop
 
 From the root of this repo:
