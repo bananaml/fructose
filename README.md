@@ -1,6 +1,8 @@
 # fructose
 
 ### Running LLMs as strongly-typed functions
+
+Implement LLM calls as python functions, using the docstring and type signatures to establish the API.
 ```
 from fructose import AI
 
@@ -13,6 +15,7 @@ def get_theme(words: list[str]) -> str:
 theme = get_theme(["cat", "dog", "bird"])
 print(theme) # animals
 ```
+The @AI() decorator introspects the function and builds a prompt to an LLM to perform the task whenever the function is invoked.
 
 ### To develop
 
