@@ -3,8 +3,7 @@ from fructose import AI
 # In all cases, we assert the return type
 
 # In trivial cases that the LLM shouldn't mess up on, we assert the return value. 
-# NOTE: this adds flakiness to the tests.
-# Fructose would be a useless package if we couldn't trust trivial cases. 
+# NOTE: this adds flakiness to the tests. But Fructose would be a useless package if we couldn't trust trivial cases. 
 
 def test_str2str():
     @AI()
@@ -15,7 +14,7 @@ def test_str2str():
     
     res = echo("onomatopoeia")
     assert type(res) == str
-    assert res == "onomatopoeia" # not deterministic, but trivial LLM task
+    assert res == "onomatopoeia"
     
 
 def test_str2int():
@@ -77,7 +76,7 @@ def test_bool2bool():
     @AI(debug=True)
     def bool2bool(boolean: bool) -> bool:
         """
-        Echo the input boolean as the output boolean. True -> True, False -> False. Don't overthink it.
+        Return the input boolean value.
         """
     
     res = bool2bool(True)
@@ -87,3 +86,45 @@ def test_bool2bool():
     res = bool2bool(False)
     assert res == False
     assert type(res) == bool
+
+def test_bool2int():
+    @AI()
+    def bool2int(boolean: bool) -> int:
+        """
+        Return an integer, 1 if the input is True, 0 if the input is False.
+        Valid return values are 1 and 0.
+        """
+    
+    res = bool2int(True)
+    assert res == 1
+    assert type(res) == int
+
+    res = bool2int(False)
+    assert res == 0
+    assert type(res) == int
+
+def test_bool2str():
+    @AI()
+    def bool2str(boolean: bool) -> str:
+        """
+        Return the string "TRUE" if the input is True, "FALSE" if the input is False. It must be in all caps.
+        """
+    
+    res = bool2str(True)
+    assert res == "TRUE"
+    assert type(res) == str
+
+    res = bool2str(False)
+    assert res == "FALSE"
+    assert type(res) == str
+
+def test_listint2int():
+    @AI()
+    def listint2listint(numbers: list[int]) -> int:
+        """
+        Return the first integer in the list.
+        """
+    
+    res = listint2listint([1, 2, 3])
+    assert res == 1
+    assert type(res) == int

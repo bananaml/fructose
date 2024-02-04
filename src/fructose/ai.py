@@ -93,7 +93,7 @@ You're a python emulator which will perform the following function:
 You'll be given these arguments:
 {repr(arg_types)}
 
-You should reply with a value of type:
+You must reply with a value of type:
 {repr(return_types)}
 
 Include no extra words in your response, and be as concise as possible.
