@@ -1,5 +1,19 @@
 # fructose
 
+### Running LLMs as strongly-typed functions
+```
+from fructose import AI
+
+@AI()
+def get_theme(words: list[str]) -> str:
+  """
+  This function takes a list of words and returns a theme.
+  """
+
+theme = get_theme(["cat", "dog", "bird"])
+print(theme) # animals
+```
+
 ### To develop
 
 From the root of this repo:
