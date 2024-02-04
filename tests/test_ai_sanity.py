@@ -5,6 +5,10 @@ from fructose import AI
 # In trivial cases that the LLM shouldn't mess up on, we assert the return value. 
 # NOTE: this adds flakiness to the tests. But Fructose would be a useless package if we couldn't trust trivial cases. 
 
+
+# ----
+# Type - to - Type tests
+
 def test_str2str():
     @AI()
     def echo(words: str) -> str:
@@ -128,3 +132,41 @@ def test_listint2int():
     res = listint2listint([1, 2, 3])
     assert res == 1
     assert type(res) == int
+
+
+# ----
+# Mixed Args KWArgs tests
+
+def test_kwargs():
+    @AI()
+    def logical_and(bool1: bool, bool2: bool) -> bool:
+        """
+        Return the logical AND of the two input booleans.
+        """
+
+    res = logical_and(bool1 = True, bool2 = False)
+    assert res == False
+    assert type(res) == bool
+
+def test_mixed_order_kwargs():
+    @AI()
+    def logical_and(bool1: bool, bool2: bool) -> bool:
+        """
+        Return the logical AND of the two input booleans.
+        """
+
+    res = logical_and(bool2 = False, bool1 = True)
+    assert res == False
+    assert type(res) == bool
+
+def test_mixed_positional_kwargs():
+    @AI()
+    def logical_and(bool1: bool, bool2: bool) -> bool:
+        """
+        Return the logical AND of the two input booleans.
+        """
+        
+    # mixed positional and kwargs
+    res = logical_and(True, bool2 = False)
+    assert res == False
+    assert type(res) == bool

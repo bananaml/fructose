@@ -1,7 +1,7 @@
 # The AI decorator
 import functools
 import os
-from .type_parser import validate_return_type
+from .type_parser import validate_return_type, type_to_string
 from openai import OpenAI
 
 client = OpenAI(
@@ -73,28 +73,32 @@ def AI(uses = [], debug = False):
             if arg != "return":
                 arg_types[arg] = func_signature[arg]
 
-        validate_return_type(func_signature.get("return"))
+        validate_return_type(func_name, func_signature.get("return"))
         return_types = func_signature.get("return") # TODO: python only allows one return type, but we should support Tuple and split it into a list
 
         _print("---- Decorating function ----")
         _print("Name:\t\t", func_name)
         _print("Arguments:")
         for arg in arg_types:
-            _print(f"\t\t {arg}:\t{arg_types[arg]}")
+            _print(f"\t\t {arg}:\t{type_to_string(arg_types[arg])}")
         _print("Returns:")
-        _print(f"\t\t {return_types}")
+        _print(f"\t\t {type_to_string(return_types)}")
         _print("Docstring:\t", func_docstring)
 
         # nieve attempt to render the system prompt, we'll need to make this much nicer
+        arg_repr = {}
+        for arg in arg_types:
+            arg_repr[arg] = type_to_string(arg_types[arg])
+        return_repr = type_to_string(return_types)
         rendered_system = f""""
 You're a python emulator which will perform the following function:
 {func_docstring}
 
 You'll be given these arguments:
-{repr(arg_types)}
+{arg_repr}
 
 You must reply with a value of type:
-{repr(return_types)}
+{return_repr}
 
 Include no extra words in your response, and be as concise as possible.
         """
