@@ -20,9 +20,30 @@ def call_llm(rendered_system, rendered_prompt):
             }
         ]
     chat_completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=messages
+            model="gpt-4-turbo-preview",
+            messages=messages,
+            tools=[{
+                "type": "function",
+                "function": {
+                    "name": "use_avg_len",
+                    "description": "Use this average length of the provided words.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "res": {
+                                "type": "integer",
+                                # "items": {
+                                #     "type": "string",
+                                # },
+                                "description": "the average length of the words"
+                            }
+                        },
+                    },
+                    # "required": ["baz"]
+                },
+            }],
         )
+    print(chat_completion)
     return chat_completion.choices[0].message.content
 
 def parse_return(return_types, string):
@@ -91,24 +112,24 @@ def AI(uses = [], debug = False):
             arg_repr[arg] = type_to_string(arg_types[arg])
         return_repr = type_to_string(return_types)
         rendered_system = f""""
-You're a python emulator which will perform the following function:
-{func_docstring}
+Your task is to find the average length of the provided words.
 
-You'll be given these arguments:
-{arg_repr}
-
-You must reply with a value of type:
-{return_repr}
-
-Include no extra words in your response, and be as concise as possible.
+Use only the functions provided.
         """
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             _print("---- Calling function ----")
+            _print(args)
+            filled_args = {}
+            for i, arg in enumerate(args):
+                filled_args[list(arg_types.keys())[i]] = arg
+            filled_args.update(kwargs) # ??
+            
+            _print(filled_args)
             # we want a string representation of the arguments and kwargs, so we can pass them to the AI
-            rendered_prompt = f"Args: {args}, Kwargs: {kwargs}"
-            _print("Prompt:\t\t", rendered_prompt)
+            rendered_prompt = f"Args: {filled_args}, Kwargs: {kwargs}"
+            _print("Prompt:\t\t", rendered_system, rendered_prompt)
 
             str_out = call_llm(rendered_system, rendered_prompt)
             _print("Response:\t", str_out)
