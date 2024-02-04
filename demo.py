@@ -1,6 +1,6 @@
 from fructose import AI
 
-@AI()
+@AI(debug=True)
 def get_theme(words: list[str]) -> str:
   """
   This function takes a list of words and returns a theme.
@@ -16,5 +16,4 @@ print("Theme:\t\t", theme)
 
 print("Type:\t\t", type(theme))
 assert type(theme) == str
-
 

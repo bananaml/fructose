@@ -24,7 +24,13 @@ def call(rendered_system, rendered_prompt):
         )
     return chat_completion.choices[0].message.content
 
-def AI(uses = []):
+def AI(uses = [], debug = False):
+
+    # quick and dirty print function that only prints if debug is True
+    def _print(*args, **kwargs):
+        if debug:
+            print(*args, **kwargs)
+
     def introspect(func):
         # introspect the function at definition time to get the type hints
         func_name = func.__name__
@@ -39,18 +45,18 @@ def AI(uses = []):
 
         return_types = func_signature.get("return") # TODO: python only allows one return type, but we should support Tuple and split it into a list
         
-        print("---- Decorating function ----")
-        print("Name:\t\t", func_name)
-        print("Arguments:")
+        _print("---- Decorating function ----")
+        _print("Name:\t\t", func_name)
+        _print("Arguments:")
         for arg in arg_types:
-            print(f"\t\t {arg}:\t{arg_types[arg]}")
-        print("Returns:")
-        print(f"\t\t {return_types}")
-        print("Docstring:\t", func_docstring)
+            _print(f"\t\t {arg}:\t{arg_types[arg]}")
+        _print("Returns:")
+        _print(f"\t\t {return_types}")
+        _print("Docstring:\t", func_docstring)
 
         # nieve attempt to render the system prompt, we'll need to make this much nicer
         rendered_system = f""""
-Perform the following function:
+You're a python emulator which will perform the following function:
 {func_docstring}
 
 You'll be given these arguments:
@@ -64,14 +70,14 @@ Include no extra words in your response, and be as concise as possible.
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
-            print("---- Calling function ----")
+            _print("---- Calling function ----")
             # we want a string representation of the arguments and kwargs, so we can pass them to the AI
             rendered_prompt = f"Args: {args}, Kwargs: {kwargs}"
-            print("Prompt:\t\t", rendered_prompt)
+            _print("Prompt:\t\t", rendered_prompt)
 
             res = call(rendered_system, rendered_prompt)
-            print("Response:\t", res)
-            print()
+            _print("Response:\t", res)
+            _print()
             return res
         
         return wrapper
