@@ -1,13 +1,14 @@
 # The AI decorator
 import functools
 import os
+from .type_parser import validate_return_type
 from openai import OpenAI
 
 client = OpenAI(
     api_key=os.environ['OPENAI_API_KEY']
 )
 
-def call(rendered_system, rendered_prompt):
+def call_llm(rendered_system, rendered_prompt):
     messages = [
             {
                 "role": "system",
@@ -24,8 +25,37 @@ def call(rendered_system, rendered_prompt):
         )
     return chat_completion.choices[0].message.content
 
-def AI(uses = [], debug = False):
+def parse_return(return_types, string):
+    res = None
+    
+    if return_types == int:
+        res = int(string)
+    
+    elif return_types == float:
+        res = float(string)
+    
+    elif return_types == str:
+        res = string
+        # llms sometimes return the string with surrounding quotes, so we'll strip them
+        if res[0] == '"' and res[-1] == '"':
+            res = res[1:-1]
+        if res[0] == "'" and res[-1] == "'":
+            res = res[1:-1]
+    
+    elif return_types == bool:
+        # llms sometimes return unexpected capitalization on booleans
+        if string.lower() == "true":
+            res = True
+        elif string.lower() == "false":
+            res = False
+        else:
+            raise ValueError("Invalid boolean value")
+    
+    else:
+        raise NotImplementedError("We don't support this return type yet")
+    return res
 
+def AI(uses = [], debug = False):
     # quick and dirty print function that only prints if debug is True
     def _print(*args, **kwargs):
         if debug:
@@ -43,8 +73,9 @@ def AI(uses = [], debug = False):
             if arg != "return":
                 arg_types[arg] = func_signature[arg]
 
+        validate_return_type(func_signature.get("return"))
         return_types = func_signature.get("return") # TODO: python only allows one return type, but we should support Tuple and split it into a list
-        
+
         _print("---- Decorating function ----")
         _print("Name:\t\t", func_name)
         _print("Arguments:")
@@ -75,8 +106,13 @@ Include no extra words in your response, and be as concise as possible.
             rendered_prompt = f"Args: {args}, Kwargs: {kwargs}"
             _print("Prompt:\t\t", rendered_prompt)
 
-            res = call(rendered_system, rendered_prompt)
-            _print("Response:\t", res)
+            str_out = call_llm(rendered_system, rendered_prompt)
+            _print("Response:\t", str_out)
+
+            # attempt to parse the response into the expected type
+            res = parse_return(return_types, str_out)
+
+            _print("Parsed:\t\t", res)
             _print()
             return res
         

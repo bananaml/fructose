@@ -17,7 +17,3 @@ def test_to_string():
 
     # combine all
     assert type_parser.type_to_string(dict[str, list[tuple[str, int]]]) == 'dict[str, list[tuple[str, int]]]'
-
-
-
-

@@ -3,11 +3,14 @@ from typing import Dict, List, Set, Tuple
 
 
 _primitive_types = set([int, str, float, bool])
-
 _wrapper_types = set([List, Dict, Tuple, Set])
 
 class InvalidTypeException(Exception):
     pass
+
+def validate_return_type(return_type):
+    if not return_type in _primitive_types:
+        raise NotImplementedError("Fructose does not support return type " + type_to_string(return_type) + " yet. Please use int, str, float, or bool.")
 
 def type_to_string(my_type):
     if not type(my_type) in [type, types.GenericAlias]:

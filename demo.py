@@ -1,19 +1,14 @@
 from fructose import AI
 
 @AI(debug=True)
-def get_theme(words: list[str]) -> str:
+def get_avg_len(words: list[str]) -> dict[str, int]:
   """
-  This function takes a list of words and returns a theme.
+  Input is a list of words, output is the average length of the words.
   """
 
-theme = get_theme(["cat", "dog", "bird"])
+theme = get_avg_len(["cat", "dog"])
 
+print(theme) # 4
+print(type(theme)) # <class 'int'>
 
-print("---- Evaluating the result ----")
-
-print("Theme:\t\t", theme)
-# assert theme == "animals" # not deterministic
-
-print("Type:\t\t", type(theme))
-assert type(theme) == str
 
