@@ -11,4 +11,4 @@ theme = get_avg_len(["cat", "dog"])
 print(theme) # 3
 print(type(theme)) # <class 'int'>
 
-
+get_avg_len = ai({"words": list[str]}, int)

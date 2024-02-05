@@ -1,6 +1,7 @@
 # The AI decorator
 import functools
 import os
+import json
 from .type_parser import validate_return_type, type_to_string
 from openai import OpenAI
 
@@ -8,7 +9,10 @@ client = OpenAI(
     api_key=os.environ['OPENAI_API_KEY']
 )
 
-def call_llm(rendered_system, rendered_prompt):
+class AIResponseParseError(Exception):
+    pass
+
+def _call_llm(rendered_system, rendered_prompt):
     messages = [
             {
                 "role": "system",
@@ -20,40 +24,29 @@ def call_llm(rendered_system, rendered_prompt):
             }
         ]
     chat_completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4-turbo-preview",
             messages=messages
         )
     return chat_completion.choices[0].message.content
 
-def parse_return(return_types, string):
-    res = None
-    
-    if return_types == int:
-        res = int(string)
-    
-    elif return_types == float:
-        res = float(string)
-    
-    elif return_types == str:
-        res = string
-        # llms sometimes return the string with surrounding quotes, so we'll strip them
-        if res[0] == '"' and res[-1] == '"':
-            res = res[1:-1]
-        if res[0] == "'" and res[-1] == "'":
-            res = res[1:-1]
-    
-    elif return_types == bool:
-        # llms sometimes return unexpected capitalization on booleans
-        if string.lower() == "true":
-            res = True
-        elif string.lower() == "false":
-            res = False
-        else:
-            raise ValueError("Invalid boolean value")
-    
-    else:
-        raise NotImplementedError("We don't support this return type yet")
-    return res
+def _parse_return(return_type, string):
+    json_result = string.split("# Result\n")[-1].strip()
+    # parse out the markdown
+    json_result = "\n".join(json_result.split("\n")[1:-1])
+    print(json_result)
+
+    try:
+        parsed_result = json.loads(json_result)
+        result = parsed_result["result"]
+    except json.JSONDecodeError as e:
+        raise AIResponseParseError("Invalid response from LLM")
+    except KeyError as e:
+        raise AIResponseParseError("Invalid response from LLM")
+
+    if result != return_type(result):
+        raise ValueError("Invalid response from LLM")
+
+    return result
 
 def AI(uses = [], debug = False):
     # quick and dirty print function that only prints if debug is True
@@ -61,47 +54,37 @@ def AI(uses = [], debug = False):
         if debug:
             print(*args, **kwargs)
 
-    def introspect(func):
-        # introspect the function at definition time to get the type hints
-        func_name = func.__name__
-        func_signature = func.__annotations__
-        func_docstring = func.__doc__
-        
+    def decorator(func):
         # annotations are arg1, arg2, ..., return
-        arg_types = {}
-        for arg in func_signature:
-            if arg != "return":
-                arg_types[arg] = func_signature[arg]
-
-        validate_return_type(func_name, func_signature.get("return"))
-        return_types = func_signature.get("return") # TODO: python only allows one return type, but we should support Tuple and split it into a list
-
-        _print("---- Decorating function ----")
-        _print("Name:\t\t", func_name)
-        _print("Arguments:")
-        for arg in arg_types:
-            _print(f"\t\t {arg}:\t{type_to_string(arg_types[arg])}")
-        _print("Returns:")
-        _print(f"\t\t {type_to_string(return_types)}")
-        _print("Docstring:\t", func_docstring)
-
-        # nieve attempt to render the system prompt, we'll need to make this much nicer
         arg_repr = {}
-        for arg in arg_types:
-            arg_repr[arg] = type_to_string(arg_types[arg])
-        return_repr = type_to_string(return_types)
-        rendered_system = f""""
-You're a python emulator which will perform the following function:
-{func_docstring}
+        for arg in func.__annotations__:
+            if arg != "return":
+                arg_repr[arg] = type_to_string(func.__annotations__[arg])
 
-You'll be given these arguments:
+        return_type = func.__annotations__.get("return")
+
+        validate_return_type(func.__name__, func.__annotations__.get("return"))
+
+        return_repr = type_to_string(return_type)
+
+        # naive attempt to render the system prompt, we'll need to make this much nicer
+        rendered_system = f""""
+{func.__doc__}
+
+You'll receive the following arguments:
 {arg_repr}
 
-You must reply with a value of type:
-{return_repr}
-
-Include no extra words in your response, and be as concise as possible.
-        """
+Your response must be of the following format:
+# Chain of Thought
+< use this section as a scratch pad to think out loud about what has happened and what might be an interesting and realistic thing to have happen next >
+# Result
+< you response must be JSON of the following format:
+```json
+{{
+    "result": {return_repr}
+}}
+```>
+""".strip()
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -110,15 +93,15 @@ Include no extra words in your response, and be as concise as possible.
             rendered_prompt = f"Args: {args}, Kwargs: {kwargs}"
             _print("Prompt:\t\t", rendered_prompt)
 
-            str_out = call_llm(rendered_system, rendered_prompt)
+            str_out = _call_llm(rendered_system, rendered_prompt)
             _print("Response:\t", str_out)
 
             # attempt to parse the response into the expected type
-            res = parse_return(return_types, str_out)
+            res = _parse_return(return_type, str_out)
 
             _print("Parsed:\t\t", res)
             _print()
             return res
         
         return wrapper
-    return introspect
+    return decorator
