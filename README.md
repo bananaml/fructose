@@ -16,6 +16,11 @@ print(theme) # animals
 The @AI() decorator introspects the function and builds a prompt to an LLM to perform the task whenever the function is invoked.
 
 ---
+
+### Stability
+We are in v0, meaning the API is unstable version-to-version. Pin your versions to ensure new builds don't break!
+Also note... since LLM generations are nondeterminsitic, the calls may break too!
+
 ### To develop
 
 From the root of this repo:
