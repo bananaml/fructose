@@ -1,5 +1,7 @@
 import sys
-sys.path.append('/Users/nik/dev/banana/fructose/src')
+
+# if you need this 🤷‍♂️
+# sys.path.append('/Users/nik/dev/banana/fructose/src')
 
 from typing import Dict, List, Set, Tuple
 # print(sys.path)
@@ -49,6 +51,7 @@ def guess_letter(word: str, letter: str) -> bool:
 # word = choose_word()
 word = choose_words(2)
 
+print("result: ", word)
 # guess = guess_letter("xertz", "t")
 
 #####

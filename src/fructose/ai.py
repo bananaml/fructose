@@ -4,6 +4,7 @@ import os
 from .type_parser import validate_return_type, type_to_string
 from openai import OpenAI
 import inspect
+import json
 
 client = OpenAI(
     api_key=os.environ['OPENAI_API_KEY']
@@ -51,7 +52,7 @@ def send(uses = [], debug = False):
             if debug:
                 print(str_out) 
 
-            return res
+            return json.loads(str_out)["the_actual_response_you_were_asked_for"]
         return wrapper
     return decorator
 
@@ -90,7 +91,7 @@ def call_llm(rendered_system, rendered_prompt, foo = None):
                 "type":"json_object",
             },
             messages=messages,
-            max_tokens=500,
+            # max_tokens=500,
         )
     return chat_completion.choices[0].message.content
 
