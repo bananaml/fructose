@@ -2,9 +2,9 @@
 
 Implement LLM calls as python functions, using the docstring and type signatures to establish the API.
 ```
-from fructose import AI
+from fructose import send
 
-@AI()
+@send()
 def get_theme(words: list[str]) -> str:
   """
   This function takes a list of words and returns a theme.
@@ -13,7 +13,7 @@ def get_theme(words: list[str]) -> str:
 theme = get_theme(["cat", "dog", "bird"])
 print(theme) # animals
 ```
-The @AI() decorator introspects the function and builds a prompt to an LLM to perform the task whenever the function is invoked.
+The @send() decorator introspects the function and builds a prompt to an LLM to perform the task whenever the function is invoked.
 
 ---
 

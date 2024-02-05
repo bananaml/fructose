@@ -11,7 +11,6 @@ client = OpenAI(
 )
 
 def send(uses = [], debug = False):
-
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -56,6 +55,8 @@ def send(uses = [], debug = False):
         return wrapper
     return decorator
 
+# alias, for fun
+yeet = send
 
 def call_llm(rendered_system, rendered_prompt):
     system_suffix = "Answer using JSON using this format: {\"answer_format\": <what should the answer look like? \"single word\", \"list of words\", \"float\", etc>, \"reasoning\": <your reasoning>, \"answer_prep\": <how you're preparing the answer>, , \"answer_examples\": <examples>, \"the_actual_response_you_were_asked_for\": <your final answer>}"
