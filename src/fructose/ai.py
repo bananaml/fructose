@@ -193,6 +193,8 @@ def AI(uses = [], debug = False):
         Take a deep breath and work through it step by step.
 
         Keep track of what was originally asked of you and make sure to actually answer correctly.
+        
+        If you don't know, try anyway.
         """.strip()
 
         @functools.wraps(func)
