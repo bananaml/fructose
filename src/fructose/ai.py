@@ -3,47 +3,115 @@ import functools
 import os
 from .type_parser import validate_return_type, type_to_string
 from openai import OpenAI
+import json 
+
 
 client = OpenAI(
     api_key=os.environ['OPENAI_API_KEY']
 )
 
-def call_llm(rendered_system, rendered_prompt):
+def call_llm(rendered_system, rendered_prompt, foo = None):
+    system_suffix = "Answer using JSON using this format: {\"reasoning\": <your reasoning>, \"answer\": <your final answer>}" # if foo is None else "use the functions provided."
     messages = [
             {
                 "role": "system",
-                "content": rendered_system
+                "content": (rendered_system + " " + system_suffix).strip()
             },
             {
                 "role": "user",
                 "content": rendered_prompt
             }
         ]
-    chat_completion = client.chat.completions.create(
-            model="gpt-4-turbo-preview",
-            messages=messages,
-            tools=[{
-                "type": "function",
-                "function": {
-                    "name": "use_avg_len",
-                    "description": "Use this average length of the provided words.",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {
-                            "res": {
-                                "type": "integer",
-                                # "items": {
-                                #     "type": "string",
-                                # },
-                                "description": "the average length of the words"
-                            }
-                        },
-                    },
-                    # "required": ["baz"]
-                },
-            }],
+    
+    if foo is not None:
+        messages.append(
+            {
+                "role": "assistant",
+                "content": foo
+            }
         )
-    print(chat_completion)
+        messages.append(
+            {
+                "role": "user",
+                "content": "What is the final answer?"
+            }
+        )
+
+    print(messages)
+
+    chat_completion = client.chat.completions.create(
+            # model="gpt-3.5-turbo-1106",
+            model="gpt-4-turbo-preview",
+            response_format={
+                "type":"json_object",
+            },  #if foo is not None else None,
+            # seed=42, # possoibly make this dynamic based on prompt
+            # temperature=1,
+            messages=messages,
+            max_tokens=500,
+            # tools=[{
+            #     "type": "function",
+            #     "function": {
+            #         "name": "use_avg_length_answer",
+            #         "description": "The answer to the user's question",
+            #         "parameters": {
+            #             "type": "object",
+            #             "properties": {
+            #                 "res": {
+            #                     "type": "number",
+            #                     # "items": {
+            #                     #     "type": "string",
+            #                     # },
+            #                     "description": "the average length of the words"
+            #                 }
+            #             },
+            #         },
+            #         # "required": ["baz"]
+            #     },
+            # }, {
+            #     "type": "function",
+            #     "function": {
+            #         "name": "use_theme_answer",
+            #         "description": "The answer to the user's question",
+            #         "parameters": {
+            #             "type": "object",
+            #             "properties": {
+            #                 "res": {
+            #                     "type": "string",
+            #                     # "items": {
+            #                     #     "type": "string",
+            #                     # },
+            #                     "description": "the common theme for the given list of words."
+            #                 }
+            #             },
+            #         },
+            #         # "required": ["baz"]
+            #     },
+            # }, {
+            #     "type": "function",
+            #     "function": {
+            #         "name": "random_word",
+            #         "description": "The answer to the user's question (the chosen random word)",
+            #         "parameters": {
+            #             "type": "object",
+            #             "properties": {
+            #                 "res": {
+            #                     "type": "string",
+            #                     # "items": {
+            #                     #     "type": "string",
+            #                     # },
+            #                     "description": "the chose random word for the user to guess in a hangman game"
+            #                 }
+            #             },
+            #         },
+            #         # "required": ["baz"]
+            #     },
+            # }] if foo is not None else None,
+        )
+    # if foo is not None:
+        # print(json.loads(chat_completion.choices[0].message.tool_calls[0].function.arguments))
+
+    print(chat_completion.choices[0].message.content)
     return chat_completion.choices[0].message.content
 
 def parse_return(return_types, string):
@@ -94,7 +162,8 @@ def AI(uses = [], debug = False):
             if arg != "return":
                 arg_types[arg] = func_signature[arg]
 
-        validate_return_type(func_name, func_signature.get("return"))
+        # todo dict
+        # validate_return_type(func_name, func_signature.get("return"))
         return_types = func_signature.get("return") # TODO: python only allows one return type, but we should support Tuple and split it into a list
 
         _print("---- Decorating function ----")
@@ -111,11 +180,20 @@ def AI(uses = [], debug = False):
         for arg in arg_types:
             arg_repr[arg] = type_to_string(arg_types[arg])
         return_repr = type_to_string(return_types)
-        rendered_system = f""""
-Your task is to find the average length of the provided words.
+        example = ""
+        rendered_system = f"""
+        First figure out what steps you need to take to solve the problem defined by the following: {func_docstring}
+        
+        Then work through the problem. You can write code or pseudocode if necessary.
 
-Use only the functions provided.
-        """
+        You may be given a set of arguments to work with.
+
+        Be concise and clear in your response.
+
+        Take a deep breath and work through it step by step.
+
+        Keep track of what was originally asked of you and make sure to actually answer correctly.
+        """.strip()
 
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -128,16 +206,22 @@ Use only the functions provided.
             
             _print(filled_args)
             # we want a string representation of the arguments and kwargs, so we can pass them to the AI
-            rendered_prompt = f"Args: {filled_args}, Kwargs: {kwargs}"
+            # if filled args and kwargs is empty, don't include it in the prompt
+            rendered_prompt = f"Args: {filled_args}, Kwargs: {kwargs}" # ; Don't actually answer, just plan out the strategy.
             _print("Prompt:\t\t", rendered_system, rendered_prompt)
 
+            # step1 
             str_out = call_llm(rendered_system, rendered_prompt)
-            _print("Response:\t", str_out)
+            _print("Respons1e:\t", str_out)
+
+            # step2 - use the response to add an assistant message and get the final answer
+            # str_out = call_llm(rendered_system, rendered_prompt, str_out)
+            # _print("Response2:\t", str_out)
 
             # attempt to parse the response into the expected type
-            res = parse_return(return_types, str_out)
+            # res = parse_return(return_types, str_out)
 
-            _print("Parsed:\t\t", res)
+            # _print("Parsed:\t\t", res)
             _print()
             return res
         
