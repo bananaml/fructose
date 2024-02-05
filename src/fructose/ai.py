@@ -11,7 +11,7 @@ client = OpenAI(
 )
 
 def call_llm(rendered_system, rendered_prompt, foo = None):
-    system_suffix = "Answer using JSON using this format: {\"reasoning\": <your reasoning>, \"answer\": <your final answer>}" # if foo is None else "use the functions provided."
+    system_suffix = "Answer using JSON using this format: {\"answer_format\": <what should the answer look like? \"single word\", \"list of words\", \"float\", etc>, \"reasoning\": <your reasoning>, \"answer_prep\": <how you're preparing the answer>, , \"answer_examples\": <examples>, \"the_actual_response_you_were_asked_for\": <your final answer>}" # if foo is None else "use the functions provided."
     messages = [
             {
                 "role": "system",
@@ -155,6 +155,7 @@ def AI(uses = [], debug = False):
         func_name = func.__name__
         func_signature = func.__annotations__
         func_docstring = func.__doc__
+        # TODO: add return type to the prompt
         
         # annotations are arg1, arg2, ..., return
         arg_types = {}
@@ -182,7 +183,7 @@ def AI(uses = [], debug = False):
         return_repr = type_to_string(return_types)
         example = ""
         rendered_system = f"""
-        First figure out what steps you need to take to solve the problem defined by the following: {func_docstring}
+        First figure out what steps you need to take to solve the problem defined by the following: \"{func_docstring}.\"
         
         Then work through the problem. You can write code or pseudocode if necessary.
 
@@ -194,7 +195,7 @@ def AI(uses = [], debug = False):
 
         Keep track of what was originally asked of you and make sure to actually answer correctly.
         
-        If you don't know, try anyway.
+        If you don't know, try anyway. Believe in yourself.
         """.strip()
 
         @functools.wraps(func)
