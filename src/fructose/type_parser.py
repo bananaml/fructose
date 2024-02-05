@@ -18,17 +18,11 @@ def validate_return_type(func_name, return_type):
         raise NotImplementedError("Fructose does not support return type " + type_to_string(return_type) + " yet. Please use int, str, float, or bool.")
 
 def type_to_string(my_type):
-    print("foo")
-    print(my_type)
-    print(type(List), type(List).__name__)
-    if not type(my_type) in [type, types.GenericAlias, type(List)]:
+    if not type(my_type) in [type, types.GenericAlias]:
         raise InvalidTypeException(f"Invalid type: {my_type}")
 
-    try:
-        prefix = my_type.__name__
-    except:
-        prefix = type(my_type).__name__
-
+    prefix = my_type.__name__
+    
     if hasattr(my_type, "__args__"):
         args = getattr(my_type, "__args__")
         formatted_args = [type_to_string(arg) for arg in args]
