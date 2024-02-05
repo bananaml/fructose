@@ -57,8 +57,9 @@ def send(uses = [], debug = False):
     return decorator
 
 
-def call_llm(rendered_system, rendered_prompt, foo = None):
-    system_suffix = "Answer using JSON using this format: {\"answer_format\": <what should the answer look like? \"single word\", \"list of words\", \"float\", etc>, \"reasoning\": <your reasoning>, \"answer_prep\": <how you're preparing the answer>, , \"answer_examples\": <examples>, \"the_actual_response_you_were_asked_for\": <your final answer>}" # if foo is None else "use the functions provided."
+def call_llm(rendered_system, rendered_prompt):
+    system_suffix = "Answer using JSON using this format: {\"answer_format\": <what should the answer look like? \"single word\", \"list of words\", \"float\", etc>, \"reasoning\": <your reasoning>, \"answer_prep\": <how you're preparing the answer>, , \"answer_examples\": <examples>, \"the_actual_response_you_were_asked_for\": <your final answer>}"
+    
     messages = [
             {
                 "role": "system",
@@ -69,20 +70,6 @@ def call_llm(rendered_system, rendered_prompt, foo = None):
                 "content": rendered_prompt
             }
         ]
-    
-    if foo is not None:
-        messages.append(
-            {
-                "role": "assistant",
-                "content": foo
-            }
-        )
-        messages.append(
-            {
-                "role": "user",
-                "content": "What is the final answer?"
-            }
-        )
 
     chat_completion = client.chat.completions.create(
             # model="gpt-3.5-turbo-1106",
