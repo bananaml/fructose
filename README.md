@@ -29,7 +29,7 @@ print(person)
 The @ai() decorator introspects the function and builds a prompt to an LLM to perform the task whenever the function is invoked.
 
 It currently executes the prompt with gpt-4, so you'll need to use your own OpenAI API Key
-`export OPENAI_API_KEY=sk-abcdefghijklmnopqrstuvwxyz`
+```export OPENAI_API_KEY=sk-abcdefghijklmnopqrstuvwxyz```
 
 ---
 
