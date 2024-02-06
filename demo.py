@@ -81,4 +81,4 @@ length = get_avg_len(["dog","window","skyscraper"])
 
 
 
-
+get_avg_len = ai({"words": list[str]}, int)
