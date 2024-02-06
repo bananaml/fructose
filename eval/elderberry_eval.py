@@ -40,7 +40,7 @@ class ElderberryEval(FructoseEval):
 
     @staticmethod
     def eval_choose_word(yeet, debug):
-        @yeet(uses=["random"], debug=debug)
+        @yeet(flavors=["random"], debug=debug)
         def choose_word() -> str:
           """
           Choose a random word for the user to guess in a hangman game. The list of words can be anything, however varied. And obscure words are preferred. The categories can be anything and mixed.
@@ -50,7 +50,7 @@ class ElderberryEval(FructoseEval):
 
     @staticmethod
     def eval_choose_words(yeet, debug):
-        @yeet(uses=["random"], debug=debug)
+        @yeet(flavors=["random"], debug=debug)
         def choose_words(n: int) -> list[str]:
           """
           Choose n random words for the user to guess in a hangman game. The list of words can be anything, however varied. Prefers obscure words. The categories can be anything and mixed.
@@ -91,7 +91,7 @@ class ElderberryEval(FructoseEval):
     # TODO: more interesting eval based on content
     @staticmethod
     def eval_draw_ascii_art(yeet, debug):
-        @yeet(uses=["random"], debug=debug)
+        @yeet(flavors=["random"], debug=debug)
         def draw_ascii_art() -> str:
           """
           Give me a copy-pasteable example of a random complex multi-line ASCII art.
@@ -102,7 +102,7 @@ class ElderberryEval(FructoseEval):
     # TODO: more interesting eval based on content
     @staticmethod
     def eval_receive_attack(yeet, debug):
-        @yeet(uses=["random"], debug=debug)
+        @yeet(flavors=["random"], debug=debug)
         def receive_attack(player_state: Player, dmg: int, crit_chance: float) -> Player:
           """
           Simulate a player receiving an attack. If crit, then double the dmg amount. Crit is randomly rolled during this turn based on crit_chance. Subtracts def_ from final dmg.

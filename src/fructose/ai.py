@@ -24,7 +24,7 @@ class Fructose():
             )
         self._client = client
         self._model = model
-        self._uses = []
+        self._flavors = []
 
     def _call_llm(self, messages: list[ChatCompletionMessageParam], debug: bool) -> str:
         if debug:
@@ -128,7 +128,7 @@ Answer with JSON in this format:
 }
 """
 
-        if "random" in self._uses:
+        if "random" in self._flavors:
             system_suffix = "\n\nRandom seed: " + str(os.urandom(16)) + "\n\n" + system_suffix
 
         return f"{system}\n{system_suffix}".strip()
@@ -137,10 +137,10 @@ Answer with JSON in this format:
         return f"{labeled_arguments}"
 
 
-    def __call__(self, uses=None, debug=False):
-        if uses is None:
-            uses = []
-        self._uses = uses
+    def __call__(self, flavors=None, debug=False):
+        if flavors is None:
+            flavors = []
+        self._flavors = flavors
 
         def decorator(func):
             return_annotation = inspect.signature(func).return_annotation

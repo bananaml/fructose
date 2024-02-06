@@ -17,7 +17,7 @@ class Player:
 # decorate your function to call an LLM. Your ways to guide the LLM are through the docstring,
 # functions parameters & arguments and the return type.
 # If your function requires explicit randomness, you can specify the uses parameter.
-@ai(uses=["random"], debug=True)
+@ai(flavors=["random"], debug=True)
 def receive_attack(player_state: Player, dmg: int, crit_chance: float) -> Player:
   """
   Simulates a player receiving an attack. If crit, then double the dmg amount. Crit is randomly rolled during this turn based on crit_chance. Subtracts def_ from final dmg.
