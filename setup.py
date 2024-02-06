@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name='fructose-ai',
+    name='fructose',
     version='0.0.1',
     packages=["fructose"],
     package_dir={'fructose': 'src/fructose'},
