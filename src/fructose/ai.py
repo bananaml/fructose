@@ -57,8 +57,6 @@ class Fructose():
         result = json_result['the_actual_response_you_were_asked_for']
 
         typed_result = return_type(result)
-        if not isinstance(typed_result, return_type):
-            raise ValueError(f"Expected {return_type}, got {type(typed_result)}")
 
         if result != typed_result:
             raise ValueError(f"Expected {return_type}, got {result}")
