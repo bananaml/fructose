@@ -1,16 +1,12 @@
 import sys
 
-# if you need this 🤷‍♂️
-# sys.path.append('/Users/nik/dev/banana/fructose/src')
 
 from typing import Dict, List, Set, Tuple
-# print(sys.path)
 
 
-from fructose import send
+from fructose import Fructose
 
-
-
+send = Fructose()
 
 @send(debug=True)
 def get_avg_len(words: list[str]) -> int:
@@ -25,7 +21,7 @@ def get_theme(words: list[str]) -> str:
   """
 
 # length = get_avg_len(["dog","window","skyscraper"])
-# theme = get_theme(["dog","window","purple"])
+theme = get_theme(["dog","window","purple"])
 
 
 ##### HANGMAN
