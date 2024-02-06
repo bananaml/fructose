@@ -1,4 +1,4 @@
-e# Fructose: LLM calls as strongly-typed functions
+# Fructose: LLM calls as strongly-typed functions
 
 Implement LLM calls as python functions, using the docstring and type signatures to establish the API.
 ```
