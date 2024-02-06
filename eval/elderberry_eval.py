@@ -8,6 +8,13 @@ class House:
   is_occupied: bool 
 
 
+@dataclass
+class Player:
+  hp: int
+  def_: int
+  name: str
+  mana: int
+
 class ElderberryEval(FructoseEval):
     
     @staticmethod
@@ -81,3 +88,24 @@ class ElderberryEval(FructoseEval):
 
         generate_dataclass()
 
+    # TODO: more interesting eval based on content
+    @staticmethod
+    def eval_draw_ascii_art(yeet):
+        @yeet(debug=True)
+        def draw_ascii_art() -> str:
+          """
+          Draws a random complex multi-line ASCII art.
+          """
+
+        draw_ascii_art()
+        
+    # TODO: more interesting eval based on content
+    @staticmethod
+    def eval_receive_attack(yeet):
+        @yeet(debug=True)
+        def receive_attack() -> str:
+          """
+          Simulates a player receiving an attack. Crit chance doubles the dmg amount. Subtracts def_ from final dmg.
+          """
+
+        receive_attack({"hp": 100, "def_": 10, "name": "Jack Sparrow", "mana": 55}, 12, True)

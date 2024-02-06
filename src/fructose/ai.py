@@ -99,6 +99,8 @@ Take a deep breath and work through it step by step.
 
 Keep track of what was originally asked of you and make sure to actually answer correctly.
 
+Do NOT simply provide instructions for how to answer the question. You must actually answer the question.
+
 If you don't know, try anyway. Believe in yourself.""".strip()
         
         system_suffix = """
