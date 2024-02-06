@@ -2,18 +2,20 @@
 
 Implement LLM calls as python functions, using the docstring and type signatures to establish the API.
 ```
-from fructose import AI
+from fructose import Fructose
 
-@AI()
-def get_theme(words: list[str]) -> str:
+ai = Fructose()
+
+@ai(debug=True)
+def get_avg_len(words: list[str]) -> int:
   """
-  This function takes a list of words and returns a theme.
+  Calculate the average length of the words in a given list.
   """
 
-theme = get_theme(["cat", "dog", "bird"])
-print(theme) # animals
+length = get_avg_len(["dog","window","skyscraper"])
+print(length)
 ```
-The @AI() decorator introspects the function and builds a prompt to an LLM to perform the task whenever the function is invoked.
+The @ai() decorator introspects the function and builds a prompt to an LLM to perform the task whenever the function is invoked.
 
 ---
 
