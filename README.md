@@ -3,23 +3,35 @@
 Implement LLM calls as python functions, using the docstring and type signatures to establish the API.
 ```
 from fructose import Fructose
+from dataclasses import dataclass
 
 ai = Fructose()
 
-@ai(debug=True)
-def get_avg_len(words: list[str]) -> int:
+@dataclass
+class Person:
+    name: str
+    hobbies: str
+    dislikes: str
+    obscure_inclinations: str
+    age: int
+    height: float
+    is_human: bool
+
+@ai()
+def generate_fake_person_data() -> Person:
   """
-  Calculate the average length of the words in a given list.
+    Generate fake data for a cliche aspiring author
   """
 
-length = get_avg_len(["dog","window","skyscraper"])
-print(length)
+person = generate_fake_person_data()
+print(person)
 ```
 The @ai() decorator introspects the function and builds a prompt to an LLM to perform the task whenever the function is invoked.
 
 ---
 
 ### Stability
+
 We are in v0, meaning the API is unstable version-to-version. Pin your versions to ensure new builds don't break!
 Also note... since LLM generations are nondeterminsitic, the calls may break too!
 

@@ -16,6 +16,11 @@ class Player:
   mana: int
 
 class ElderberryEval(FructoseEval):
+    """
+    Most of these are trivial and not a reflection of how fructose should actually be used.
+
+    They're mostly for testing purposes, especially type-checking.
+    """
     
     @staticmethod
     def eval_get_avg_len(yeet, debug):

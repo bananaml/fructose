@@ -7,6 +7,9 @@ from dataclasses import dataclass
 @dataclass
 class Person:
     name: str
+    hobbies: str
+    dislikes: str
+    obscure_inclinations: str
     age: int
     height: float
     is_human: bool
@@ -19,13 +22,12 @@ ai = Fructose()
 @ai()
 def generate_fake_person_data() -> Person:
   """
-    Generate fake data for following the schema.
+    Generate fake data for a cliche aspiring author
   """
 
-
 def main():
-    persons = generate_fake_person_data()
-    print(persons)
+    person = generate_fake_person_data()
+    print(person)
 
 
 if __name__ == "__main__":
