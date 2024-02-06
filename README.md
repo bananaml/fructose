@@ -39,9 +39,9 @@ pip3 install -e .
 ```
 This installs the fructose package in editable mode. All imports of fructose will run the fructose source at `./src/fructose` directly.
 
-Run the demo with:
+Under /examples you'll find different usage examples. And run them like so:
 ``` bash
-python3 demo.py
+python3 examples/fake_data.py
 ```
 
 Run tests with:

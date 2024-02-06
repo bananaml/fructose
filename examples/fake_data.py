@@ -16,7 +16,7 @@ ai = Fructose()
 
 # decorate your function to call an LLM. Your ways to guide the LLM are through the docstring,
 # functions parameters & arguments and the return type.
-@ai(debug=True)
+@ai()
 def generate_fake_person_data() -> Person:
   """
     Generate fake data for following the schema.
