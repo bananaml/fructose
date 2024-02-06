@@ -54,14 +54,15 @@ class Fructose():
     def _parse_llm_result(self, result: str, return_type: Type[T]) -> T:
         json_result = json.loads(result)
 
+        # note booleans tend to come back as strings
+
         result = json_result['the_actual_response_you_were_asked_for']
 
         typed_result = return_type(result)
 
         # todo: many things
-
-        if result != typed_result:
-            raise ValueError(f"Expected {return_type}, got {result}")
+        if typed_result != result:
+            raise ValueError(f"Type cast failed, typed {typed_result} != {result}")
 
         return typed_result
 
