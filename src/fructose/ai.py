@@ -1,91 +1,67 @@
-# The AI decorator
-import functools
-import os
-from .type_parser import validate_return_type, type_to_string
-from openai import OpenAI
+from functools import wraps
 import inspect
 import json
+import os
+from typing import Any, Callable, Type, TypeVar
+from openai import OpenAI
+from openai.types.chat import ChatCompletionMessageParam, ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 
-client = OpenAI(
-    api_key=os.environ['OPENAI_API_KEY']
-)
+from fructose.type_parser import type_to_string
+from . import function_helpers
+import openai
 
-def send(uses = [], debug = False):
+T = TypeVar('T')
 
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            
-            return_type = inspect.signature(func).return_annotation
-            doc_string = inspect.getdoc(func)
+LabeledArguments = dict[str, Any]
 
-            # Get function parameters
-            params = inspect.signature(func).parameters
-            arguments = dict()
+class Fructose():
+    def __init__(self, client=None, model="gpt-3.5-turbo"):
+        if client is None:
+            client = openai.Client(
+                api_key=os.environ['OPENAI_API_KEY']
+            )
+        self._client = client
+        self._model = model
 
-            # Map *args to parameters
-            for (param_name, param), arg in zip(params.items(), args):
-                arguments[param_name] = arg
-                
-            # Update args_values with **kwargs which maps directly by name
-            arguments.update(kwargs)
-
-            # Handling default values for missing arguments
-            for param_name, param in params.items():
-                if param_name not in arguments and param.default is not inspect.Parameter.empty:
-                    arguments[param_name] = param.default
-            
-            # TODO if filled args and kwargs is empty, don't include it in the prompt
-            rendered_prompt = f"Args: {arguments}, Kwargs: {kwargs}"
-            rendered_system = get_system_prompt(doc_string, return_type)
-
-            if debug:
-                print("------")
-                print("Function name:", func.__name__)
-                print("Params and args:", arguments)
-                print("System:", rendered_system)
-                print("Prompt:", rendered_prompt)
-                print("------")
-
-            str_out = call_llm(rendered_system, rendered_prompt)
-
-            if debug:
-                print(str_out) 
-
-            return json.loads(str_out)["the_actual_response_you_were_asked_for"]
-        return wrapper
-    return decorator
-
-
-def call_llm(rendered_system, rendered_prompt):
-    system_suffix = "Answer using JSON using this format: {\"answer_format\": <what should the answer look like? \"single word\", \"list of words\", \"float\", etc>, \"reasoning\": <your reasoning>, \"answer_prep\": <how you're preparing the answer>, , \"answer_examples\": <examples>, \"the_actual_response_you_were_asked_for\": <your final answer>}"
-    
-    messages = [
-            {
-                "role": "system",
-                "content": (rendered_system + " " + system_suffix).strip()
-            },
-            {
-                "role": "user",
-                "content": rendered_prompt
-            }
-        ]
-
-    chat_completion = client.chat.completions.create(
-            # model="gpt-3.5-turbo-1106",
-            model="gpt-4-turbo-preview",
-            response_format={
-                "type":"json_object",
-            },
-            messages=messages,
-            # max_tokens=500,
+    def _call_llm(self, messages: list[ChatCompletionMessageParam], debug: bool) -> str:
+        chat_completion = self._client.chat.completions.create(
+            model=self._model,
+            messages=messages
         )
-    return chat_completion.choices[0].message.content
+
+        result = chat_completion.choices[0].message.content
+
+        if debug:
+            for message in messages:
+                if message['role'] == "system":
+                    # print color: blue
+                    print(f"\033[94mSystem: {message['content']}\033[0m")
+                else:
+                    # print color: green
+                    print(f"\033[92mUser: {message['content']}\033[0m")
+            print(result)
 
 
-def get_system_prompt(func_docstring: str, return_type: str) -> str:
-    return f"""
-First figure out what steps you need to take to solve the problem defined by the following: \"{func_docstring}. The return type should be {return_type}\"
+        if result is None:
+            raise Exception("OpenAI chat completion failed")
+
+        return result
+
+    def _parse_llm_result(self, result: str, return_type: Type[T]) -> T:
+        json_result = json.loads(result)
+
+        result = json_result['the_actual_response_you_were_asked_for']
+
+        typed_result = return_type(result)
+
+        if result != typed_result:
+            raise ValueError(f"Expected {return_type}, got {result}")
+
+        return typed_result
+
+    def _render_system(self, func_doc_string: str, return_type_str: str ) -> str:
+        return f"""
+First figure out what steps you need to take to solve the problem defined by the following: \"{func_doc_string}. The return type should be {return_type_str}\"
         
 Then work through the problem. You can write code or pseudocode if necessary.
 
@@ -100,32 +76,39 @@ Keep track of what was originally asked of you and make sure to actually answer 
 If you don't know, try anyway. Believe in yourself.
     """.strip()
 
-def parse_return(return_types, string):
-    res = None
-    
-    if return_types == int:
-        res = int(string)
-    
-    elif return_types == float:
-        res = float(string)
-    
-    elif return_types == str:
-        res = string
-        # llms sometimes return the string with surrounding quotes, so we'll strip them
-        if res[0] == '"' and res[-1] == '"':
-            res = res[1:-1]
-        if res[0] == "'" and res[-1] == "'":
-            res = res[1:-1]
-    
-    elif return_types == bool:
-        # llms sometimes return unexpected capitalization on booleans
-        if string.lower() == "true":
-            res = True
-        elif string.lower() == "false":
-            res = False
-        else:
-            raise ValueError("Invalid boolean value")
-    
-    else:
-        raise NotImplementedError("We don't support this return type yet")
-    return res
+    def _render_prompt(self, labeled_arguments: dict[str, Any]) -> str:
+        return f"{labeled_arguments}"
+
+
+    def __call__(self, uses=None, debug=False):
+        if uses is None:
+            uses = []
+
+        def decorator(func):
+            return_type_str = type_to_string(inspect.signature(func).return_annotation)
+            rendered_system = self._render_system(func.__doc__, return_type_str)
+
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                labeled_arguments = function_helpers.collect_arguments(func, args, kwargs)
+                rendered_prompt = self._render_prompt(labeled_arguments)
+
+                messages = [
+                    ChatCompletionSystemMessageParam(
+                        role="system",
+                        content=rendered_system
+                    ),
+                    ChatCompletionUserMessageParam(
+                        role="user",
+                        content=rendered_prompt
+                    )
+                ]
+
+                raw_result = self._call_llm(messages, debug)
+                result = self._parse_llm_result(raw_result, inspect.signature(func).return_annotation)
+
+                return result
+
+            return wrapper
+
+        return decorator
