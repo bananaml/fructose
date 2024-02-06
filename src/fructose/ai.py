@@ -24,6 +24,7 @@ class Fructose():
             )
         self._client = client
         self._model = model
+        self._uses = []
 
     def _call_llm(self, messages: list[ChatCompletionMessageParam], debug: bool) -> str:
         if debug:
@@ -93,19 +94,24 @@ Then work through the problem. You can write code or pseudocode if necessary.
 
 You may be given a set of arguments to work with.
 
-Be concise and clear in your response.
-
 Take a deep breath and work through it step by step.
 
 Keep track of what was originally asked of you and make sure to actually answer correctly.
 
 Do NOT simply provide instructions for how to answer the question. You must actually answer the question.
 
+Your answer should be stand-alone. The user shouldn't need to come back and ask for completion.
+
+Be concise and clear in your response. 
+
+Do NOT add any additional explanation if not explicitly asked for. The answer should be usable as-is.
+
 If you don't know, try anyway. Believe in yourself.""".strip()
         
         system_suffix = """
 Answer with JSON in this format: 
 {
+    \"description_of_requested_answer\": <what was asked of you>,
     \"answer_format\": <what should the answer look like? \"single word\", \"list of words\", \"float\", etc>, 
     \"reasoning\": <your reasoning>, 
     \"answer_prep_steps\": [
@@ -114,13 +120,17 @@ Answer with JSON in this format:
         ...
     ], 
     \"steps_applied\": [
-        <step 1 applied to the given inputs>, 
+        <step 1 applied to the given inputs; use exact calculations were appropriate>, 
         <step 2>, 
         ...
-    ], 
+    ],
     \"the_actual_response_you_were_asked_for\": <your final answer>
 }
 """
+
+        if "random" in self._uses:
+            system_suffix = "\n\nRandom seed: " + str(os.urandom(16)) + "\n\n" + system_suffix
+
         return f"{system}\n{system_suffix}".strip()
 
     def _render_prompt(self, labeled_arguments: dict[str, Any]) -> str:
@@ -130,6 +140,7 @@ Answer with JSON in this format:
     def __call__(self, uses=None, debug=False):
         if uses is None:
             uses = []
+        self._uses = uses
 
         def decorator(func):
             return_annotation = inspect.signature(func).return_annotation

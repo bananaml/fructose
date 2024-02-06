@@ -19,7 +19,7 @@ class ElderberryEval(FructoseEval):
     
     @staticmethod
     def eval_get_avg_len(yeet, debug):
-        @yeet(debug)
+        @yeet(debug=debug)
         def get_avg_len(words: list[str]) -> int:
           """
           Calculates the average length of the words in a given list.
@@ -30,7 +30,7 @@ class ElderberryEval(FructoseEval):
 
     @staticmethod
     def eval_get_theme(yeet, debug):
-        @yeet(debug)
+        @yeet(debug=debug)
         def get_theme(words: list[str]) -> str:
           """
           Figures out a single common theme for the given list of words.
@@ -40,7 +40,7 @@ class ElderberryEval(FructoseEval):
 
     @staticmethod
     def eval_choose_word(yeet, debug):
-        @yeet(debug)
+        @yeet(uses=["random"], debug=debug)
         def choose_word() -> str:
           """
           Chooses a random word for the user to guess in a hangman game. The list of words can be anything, however varied. And obscure words are preferred. The categories can be anything and mixed.
@@ -50,7 +50,7 @@ class ElderberryEval(FructoseEval):
 
     @staticmethod
     def eval_choose_words(yeet, debug):
-        @yeet(debug)
+        @yeet(uses=["random"], debug=debug)
         def choose_words(n: int) -> list[str]:
           """
           Chooses n random words for the user to guess in a hangman game. The list of words can be anything, however varied. Prefers obscure words. The categories can be anything and mixed.
@@ -60,7 +60,7 @@ class ElderberryEval(FructoseEval):
 
     @staticmethod
     def eval_guess_letter(yeet, debug):
-        @yeet(debug)
+        @yeet(debug=debug)
         def guess_letter(word: str, letter: str) -> bool:
           """
           Checks if the letter is in the word.
@@ -70,7 +70,7 @@ class ElderberryEval(FructoseEval):
 
     @staticmethod
     def eval_generate_data(yeet, debug):
-        @yeet(debug)
+        @yeet(debug=debug)
         def generate_data(schema: str) -> dict:
           """
           Generates data based on the given schema.
@@ -80,7 +80,7 @@ class ElderberryEval(FructoseEval):
 
     @staticmethod
     def eval_generate_dataclass(yeet, debug):
-        @yeet(debug)
+        @yeet(debug=debug)
         def generate_dataclass() -> House:
           """
           Generates data based on the given schema.
@@ -90,22 +90,33 @@ class ElderberryEval(FructoseEval):
 
     # TODO: more interesting eval based on content
     @staticmethod
-    def eval_draw_ascii_art(yeet):
-        @yeet(debug=True)
+    def eval_draw_ascii_art(yeet, debug):
+        @yeet(uses=["random"], debug=debug)
         def draw_ascii_art() -> str:
           """
-          Draws a random complex multi-line ASCII art.
+          Give me a copy-pasteable example of a random complex multi-line ASCII art.
           """
 
         draw_ascii_art()
         
     # TODO: more interesting eval based on content
     @staticmethod
-    def eval_receive_attack(yeet):
-        @yeet(debug=True)
-        def receive_attack() -> str:
+    def eval_receive_attack(yeet, debug):
+        @yeet(uses=["random"], debug=debug)
+        def receive_attack(player_state: Player, dmg: int, crit_chance: float) -> Player:
           """
-          Simulates a player receiving an attack. Crit chance doubles the dmg amount. Subtracts def_ from final dmg.
+          Simulates a player receiving an attack. If crit, then double the dmg amount. Crit is randomly rolled during this turn based on crit_chance. Subtracts def_ from final dmg.
           """
 
-        receive_attack({"hp": 100, "def_": 10, "name": "Jack Sparrow", "mana": 55}, 12, True)
+        receive_attack({"hp": 100, "def_": 10, "name": "Jack Sparrow", "mana": 55}, 12, 0.3)
+        
+    # TODO: starts with <a and contains "https://github.com/bananaml/fructose"
+    @staticmethod
+    def eval_write_github_stars_badge_html(yeet, debug):
+        @yeet(debug=debug)
+        def write_github_stars_badge_html(repo: str) -> str:
+          """
+          Writes HTML to display a GitHub stars badge for a given repo.
+          """
+
+        write_github_stars_badge_html("bananaml/fructose")
