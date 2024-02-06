@@ -57,6 +57,8 @@ class Fructose():
         result = json_result['the_actual_response_you_were_asked_for']
 
         typed_result = return_type(result)
+        if not isinstance(typed_result, return_type):
+            raise ValueError(f"Expected {return_type}, got {type(typed_result)}")
 
         if result != typed_result:
             raise ValueError(f"Expected {return_type}, got {result}")
@@ -127,7 +129,6 @@ Answer with JSON in this format:
                         content=rendered_prompt
                     )
                 ]
-
                 raw_result = self._call_llm(messages, debug)
                 result = self._parse_llm_result(raw_result, inspect.signature(func).return_annotation)
 
