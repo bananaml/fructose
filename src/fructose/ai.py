@@ -2,8 +2,7 @@ from functools import wraps
 import inspect
 import json
 import os
-from typing import Any, Callable, Type, TypeVar
-from openai import OpenAI
+from typing import Any, Type, TypeVar
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 
 from fructose.type_parser import type_to_string, validate_return_type
