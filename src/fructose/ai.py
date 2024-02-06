@@ -1,107 +1,138 @@
-# The AI decorator
-import functools
-import os
+from functools import wraps
+import inspect
 import json
-from .type_parser import validate_return_type, type_to_string
+import os
+from typing import Any, Callable, Type, TypeVar
 from openai import OpenAI
+from openai.types.chat import ChatCompletionMessageParam, ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 
-client = OpenAI(
-    api_key=os.environ['OPENAI_API_KEY']
-)
+from fructose.type_parser import type_to_string
+from . import function_helpers
+import openai
 
-class AIResponseParseError(Exception):
-    pass
+T = TypeVar('T')
 
-def _call_llm(rendered_system, rendered_prompt):
-    messages = [
-            {
-                "role": "system",
-                "content": rendered_system
-            },
-            {
-                "role": "user",
-                "content": rendered_prompt
-            }
-        ]
-    chat_completion = client.chat.completions.create(
-            model="gpt-4-turbo-preview",
-            messages=messages
-        )
-    return chat_completion.choices[0].message.content
+LabeledArguments = dict[str, Any]
 
-def _parse_return(return_type, string):
-    json_result = string.split("# Result\n")[-1].strip()
-    # parse out the markdown
-    json_result = "\n".join(json_result.split("\n")[1:-1])
-    print(json_result)
+class Fructose():
+    def __init__(self, client=None, model="gpt-4-turbo-preview"):
+        if client is None:
+            client = openai.Client(
+                api_key=os.environ['OPENAI_API_KEY']
+            )
+        self._client = client
+        self._model = model
 
-    try:
-        parsed_result = json.loads(json_result)
-        result = parsed_result["result"]
-    except json.JSONDecodeError as e:
-        raise AIResponseParseError("Invalid response from LLM")
-    except KeyError as e:
-        raise AIResponseParseError("Invalid response from LLM")
-
-    if result != return_type(result):
-        raise ValueError("Invalid response from LLM")
-
-    return result
-
-def AI(uses = [], debug = False):
-    # quick and dirty print function that only prints if debug is True
-    def _print(*args, **kwargs):
+    def _call_llm(self, messages: list[ChatCompletionMessageParam], debug: bool) -> str:
         if debug:
-            print(*args, **kwargs)
+             for message in messages:
+                if message['role'] == "system":
+                    # print color: blue
+                    print(f"\033[94mSystem: {message['content']}\033[0m")
+                else:
+                    # print color: green
+                    print(f"\033[92mUser: {message['content']}\033[0m")
 
-    def decorator(func):
-        # annotations are arg1, arg2, ..., return
-        arg_repr = {}
-        for arg in func.__annotations__:
-            if arg != "return":
-                arg_repr[arg] = type_to_string(func.__annotations__[arg])
+        chat_completion = self._client.chat.completions.create(
+            model=self._model,
+            messages=messages,
+            response_format={
+                "type":"json_object",
+            },
+        )
 
-        return_type = func.__annotations__.get("return")
+        result = chat_completion.choices[0].message.content
+        if debug:
+            print(result)
 
-        validate_return_type(func.__name__, func.__annotations__.get("return"))
 
-        return_repr = type_to_string(return_type)
+        if result is None:
+            raise Exception("OpenAI chat completion failed")
 
-        # naive attempt to render the system prompt, we'll need to make this much nicer
-        rendered_system = f""""
-{func.__doc__}
+        return result
 
-You'll receive the following arguments:
-{arg_repr}
+    def _parse_llm_result(self, result: str, return_type: Type[T]) -> T:
+        json_result = json.loads(result)
 
-Your response must be of the following format:
-# Chain of Thought
-< use this section as a scratch pad to think out loud about what has happened and what might be an interesting and realistic thing to have happen next >
-# Result
-< you response must be JSON of the following format:
-```json
-{{
-    "result": {return_repr}
-}}
-```>
-""".strip()
+        result = json_result['the_actual_response_you_were_asked_for']
 
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            _print("---- Calling function ----")
-            # we want a string representation of the arguments and kwargs, so we can pass them to the AI
-            rendered_prompt = f"Args: {args}, Kwargs: {kwargs}"
-            _print("Prompt:\t\t", rendered_prompt)
+        typed_result = return_type(result)
 
-            str_out = _call_llm(rendered_system, rendered_prompt)
-            _print("Response:\t", str_out)
+        if result != typed_result:
+            raise ValueError(f"Expected {return_type}, got {result}")
 
-            # attempt to parse the response into the expected type
-            res = _parse_return(return_type, str_out)
+        return typed_result
 
-            _print("Parsed:\t\t", res)
-            _print()
-            return res
+    def _render_system(self, func_doc_string: str, return_type_str: str ) -> str:
+        system = f"""
+First figure out what steps you need to take to solve the problem defined by the following: 
+\"{func_doc_string.strip()}. The return type should be {return_type_str}.\"
         
-        return wrapper
-    return decorator
+Then work through the problem. You can write code or pseudocode if necessary.
+
+You may be given a set of arguments to work with.
+
+Be concise and clear in your response.
+
+Take a deep breath and work through it step by step.
+
+Keep track of what was originally asked of you and make sure to actually answer correctly.
+
+If you don't know, try anyway. Believe in yourself.""".strip()
+        
+        system_suffix = """
+Answer with JSON in this format: 
+{
+    \"answer_format\": <what should the answer look like? \"single word\", \"list of words\", \"float\", etc>, 
+    \"reasoning\": <your reasoning>, 
+    \"answer_prep_steps\": [
+        <step 1 in how you're preparing the answer>, 
+        <step 2>, 
+        ...
+    ], 
+    \"steps_applied\": [
+        <step 1 applied to the given inputs>, 
+        <step 2>, 
+        ...
+    ], 
+    \"the_actual_response_you_were_asked_for\": <your final answer>
+}
+"""
+        return f"{system}\n{system_suffix}".strip()
+
+    def _render_prompt(self, labeled_arguments: dict[str, Any]) -> str:
+        return f"{labeled_arguments}"
+
+
+    def __call__(self, uses=None, debug=False):
+        if uses is None:
+            uses = []
+
+        def decorator(func):
+            return_type_str = type_to_string(inspect.signature(func).return_annotation)
+            rendered_system = self._render_system(func.__doc__, return_type_str)
+
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                labeled_arguments = function_helpers.collect_arguments(func, args, kwargs)
+                rendered_prompt = self._render_prompt(labeled_arguments)
+
+                messages = [
+                    ChatCompletionSystemMessageParam(
+                        role="system",
+                        content=rendered_system
+                    ),
+                    ChatCompletionUserMessageParam(
+                        role="user",
+                        content=rendered_prompt
+                    )
+                ]
+
+                raw_result = self._call_llm(messages, debug)
+                result = self._parse_llm_result(raw_result, inspect.signature(func).return_annotation)
+
+                return result
+
+            return wrapper
+
+        return decorator

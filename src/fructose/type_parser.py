@@ -22,7 +22,7 @@ def type_to_string(my_type):
         raise InvalidTypeException(f"Invalid type: {my_type}")
 
     prefix = my_type.__name__
-
+    
     if hasattr(my_type, "__args__"):
         args = getattr(my_type, "__args__")
         formatted_args = [type_to_string(arg) for arg in args]
