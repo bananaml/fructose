@@ -58,7 +58,7 @@ def send(uses = [], debug = False):
 
 
 def call_llm(rendered_system, rendered_prompt):
-    system_suffix = "Answer using JSON using this format: {\"answer_format\": <what should the answer look like? \"single word\", \"list of words\", \"float\", etc>, \"reasoning\": <your reasoning>, \"answer_prep\": <how you're preparing the answer>, , \"answer_examples\": <examples>, \"the_actual_response_you_were_asked_for\": <your final answer>}"
+    system_suffix = "Answer using JSON using this format: {\"answer_format\": <what should the answer look like? \"single word\", \"list of words\", \"float\", etc>, \"reasoning\": <your reasoning>, \"answer_prep_steps\": [<step 1 in how you're preparing the answer>, <step 2>, ...], , \"steps_applied\": [<step 1 applied to the given inputs>, <step 2>, ...], \"the_actual_response_you_were_asked_for\": <your final answer>}"
     
     messages = [
             {
