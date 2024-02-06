@@ -1,4 +1,5 @@
-from fructose import AI
+from fructose import Fructose
+AI = Fructose()
 
 # In all cases, we assert the return type
 

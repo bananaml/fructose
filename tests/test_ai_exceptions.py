@@ -1,5 +1,7 @@
-from fructose import AI, type_parser
+from fructose import Fructose, type_parser
 import pytest
+
+AI = Fructose()
 
 # We test known exceptions to ensure that the AI decorator is working as expected.
 
