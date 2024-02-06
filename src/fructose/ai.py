@@ -6,7 +6,7 @@ from typing import Any, Callable, Type, TypeVar
 from openai import OpenAI
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 
-from fructose.type_parser import type_to_string
+from fructose.type_parser import type_to_string, validate_return_type
 from . import function_helpers
 import openai
 
@@ -57,6 +57,8 @@ class Fructose():
         result = json_result['the_actual_response_you_were_asked_for']
 
         typed_result = return_type(result)
+
+        # todo: many things
 
         if result != typed_result:
             raise ValueError(f"Expected {return_type}, got {result}")
@@ -109,7 +111,9 @@ Answer with JSON in this format:
             uses = []
 
         def decorator(func):
-            return_type_str = type_to_string(inspect.signature(func).return_annotation)
+            return_annotation = inspect.signature(func).return_annotation
+            validate_return_type(func.__name__, return_annotation)
+            return_type_str = type_to_string(return_annotation)
             rendered_system = self._render_system(func.__doc__, return_type_str)
 
             @wraps(func)
