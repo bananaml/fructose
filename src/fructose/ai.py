@@ -4,10 +4,11 @@ import json
 import os
 import ast
 import dataclasses
-from typing import Any, Type, TypeVar
+from typing import Any, Type, TypeVar, get_args
+from collections.abc import Container
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 
-from fructose.type_parser import type_to_string, validate_return_type, describe_dataclass_as_dict
+from fructose.type_parser import type_to_string, validate_return_type, describe_dataclass_as_dict, validate_container_type
 from . import function_helpers
 import openai
 
@@ -73,8 +74,13 @@ class Fructose():
             typed_result = return_type(converted_value)
 
         # checks if the return type from the LLM is what the decorated function expects
-        if type(typed_result) != return_type:
-            raise ValueError(f"Type cast failed, value {typed_result} is of type {type(typed_result)}, expected {return_type}")
+        return_type_args = get_args(return_type)
+        if return_type_args:
+            # this function will raise an error if the types don't match
+            validate_container_type(typed_result, return_type_args)
+        else: 
+            if type(typed_result) != return_type:
+                raise ValueError(f"Type cast failed, value {typed_result} is of type {type(typed_result)}, expected {return_type}")
 
         return typed_result
 
