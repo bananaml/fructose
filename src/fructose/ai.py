@@ -2,11 +2,13 @@ from functools import wraps
 import inspect
 import json
 import os
-from typing import Any, Callable, Type, TypeVar
-from openai import OpenAI
+import ast
+import dataclasses
+from typing import Any, Type, TypeVar, get_args
+from collections.abc import Container
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 
-from fructose.type_parser import type_to_string, validate_return_type
+from fructose.type_parser import type_to_string, validate_return_type, describe_dataclass_as_dict, validate_container_type
 from . import function_helpers
 import openai
 
@@ -54,15 +56,31 @@ class Fructose():
     def _parse_llm_result(self, result: str, return_type: Type[T]) -> T:
         json_result = json.loads(result)
 
-        # note booleans tend to come back as strings
+        # Very hacky but the logic is this:
+        # The json.loads might in some cases do the correct type conversion, for example for bools it will
+        res = json_result['the_actual_response_you_were_asked_for']
 
-        result = json_result['the_actual_response_you_were_asked_for']
+        # and for strings it does it as well, which is why we can early return 
+        if return_type == str:
+            return res
+        
+        # But in more complicated cases we "double check" it by converting it to a string and then using ast.literal_eval
+        converted_value = ast.literal_eval(str(res))
 
-        typed_result = return_type(result)
+        # and only then do the type casting
+        if dataclasses.is_dataclass(return_type):
+            typed_result = return_type(**converted_value)
+        else:
+            typed_result = return_type(converted_value)
 
-        # todo: many things
-        if typed_result != result:
-            raise ValueError(f"Type cast failed, typed {typed_result} != {result}")
+        # checks if the return type from the LLM is what the decorated function expects
+        return_type_args = get_args(return_type)
+        if return_type_args:
+            # this function will raise an error if the types don't match
+            validate_container_type(typed_result, return_type_args)
+        else: 
+            if type(typed_result) != return_type:
+                raise ValueError(f"Type cast failed, value {typed_result} is of type {type(typed_result)}, expected {return_type}")
 
         return typed_result
 
@@ -114,7 +132,13 @@ Answer with JSON in this format:
         def decorator(func):
             return_annotation = inspect.signature(func).return_annotation
             validate_return_type(func.__name__, return_annotation)
-            return_type_str = type_to_string(return_annotation)
+            
+            if dataclasses.is_dataclass(return_annotation):
+                return_annotation = describe_dataclass_as_dict(return_annotation)
+                return_type_str = str(return_annotation)
+            else:
+                return_type_str = type_to_string(return_annotation)
+
             rendered_system = self._render_system(func.__doc__, return_type_str)
 
             @wraps(func)
