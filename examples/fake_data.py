@@ -11,7 +11,7 @@ class Person:
     height: float
     is_human: bool
 
-# Create a new instance of the Fructose
+# Create a new instance of the Fructose app
 ai = Fructose()
 
 # decorate your function to call an LLM. Your ways to guide the LLM are through the docstring,

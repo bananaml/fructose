@@ -3,7 +3,7 @@
 from fructose import Fructose
 from dataclasses import dataclass
 
-# Create a new instance of the Fructose
+# Create a new instance of the Fructose app
 ai = Fructose()
 
 # Define a dataclass to represent a player
@@ -26,7 +26,6 @@ def receive_attack(player_state: Player, dmg: int, crit_chance: float) -> Player
 def main():
     state = receive_attack({"hp": 100, "def_": 10, "name": "Jack Sparrow", "mana": 55}, 12, 0.3)
     print(state)
-
 
 if __name__ == "__main__":
     main()

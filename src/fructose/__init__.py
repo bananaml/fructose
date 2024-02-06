@@ -1,2 +1,2 @@
-from . import type_parser
 from .ai import *
+from .cli import cli

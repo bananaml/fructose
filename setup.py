@@ -4,11 +4,16 @@ setup(
     name='fructose',
     version='0.0.1',
     packages=["fructose"],
-    package_dir={'fructose': 'src/fructose'},
+    package_dir={'': 'src'},
+    entry_points={
+        'console_scripts': [
+            'fructose = fructose:cli',
+        ],
+    },
     install_requires=[
         'openai',
+        'click'
     ],
-
     # Additional metadata about your package
     author='Banana',
     author_email='erik@banana.dev',
