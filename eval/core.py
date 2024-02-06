@@ -1,5 +1,8 @@
 from fructose import Fructose
 yeet = Fructose()
+
+DEBUG = True
+
 class FructoseEval():
     def __init_subclass__(cls):
         # list all functions on cls
@@ -9,13 +12,12 @@ class FructoseEval():
             if callable(getattr(cls, attr)) and attr.startswith("eval_")
         ]
 
-
         score = 0
         for func in functions:
             print(f"running {func}")
 
             try:
-                getattr(cls, func)(yeet)
+                getattr(cls, func)(yeet, DEBUG)
                 print(f"\033[92m{func} passed\033[0m")
                 score += 1
             except Exception as e:
