@@ -15,7 +15,7 @@ T = TypeVar('T')
 LabeledArguments = dict[str, Any]
 
 class Fructose():
-    def __init__(self, client=None, model="gpt-3.5-turbo"):
+    def __init__(self, client=None, model="gpt-4-turbo-preview"):
         if client is None:
             client = openai.Client(
                 api_key=os.environ['OPENAI_API_KEY']
@@ -24,21 +24,25 @@ class Fructose():
         self._model = model
 
     def _call_llm(self, messages: list[ChatCompletionMessageParam], debug: bool) -> str:
-        chat_completion = self._client.chat.completions.create(
-            model=self._model,
-            messages=messages
-        )
-
-        result = chat_completion.choices[0].message.content
-
         if debug:
-            for message in messages:
+             for message in messages:
                 if message['role'] == "system":
                     # print color: blue
                     print(f"\033[94mSystem: {message['content']}\033[0m")
                 else:
                     # print color: green
                     print(f"\033[92mUser: {message['content']}\033[0m")
+
+        chat_completion = self._client.chat.completions.create(
+            model=self._model,
+            messages=messages,
+            response_format={
+                "type":"json_object",
+            },
+        )
+
+        result = chat_completion.choices[0].message.content
+        if debug:
             print(result)
 
 
@@ -61,7 +65,8 @@ class Fructose():
 
     def _render_system(self, func_doc_string: str, return_type_str: str ) -> str:
         system = f"""
-First figure out what steps you need to take to solve the problem defined by the following: \"{func_doc_string}. The return type should be {return_type_str}\"
+First figure out what steps you need to take to solve the problem defined by the following: 
+\"{func_doc_string.strip()}. The return type should be {return_type_str}.\"
         
 Then work through the problem. You can write code or pseudocode if necessary.
 
@@ -73,11 +78,10 @@ Take a deep breath and work through it step by step.
 
 Keep track of what was originally asked of you and make sure to actually answer correctly.
 
-If you don't know, try anyway. Believe in yourself.
-    """.strip()
+If you don't know, try anyway. Believe in yourself.""".strip()
         
         system_suffix = """
-Answer using JSON using this format: 
+Answer with JSON in this format: 
 {
     \"answer_format\": <what should the answer look like? \"single word\", \"list of words\", \"float\", etc>, 
     \"reasoning\": <your reasoning>, 
@@ -94,8 +98,7 @@ Answer using JSON using this format:
     \"the_actual_response_you_were_asked_for\": <your final answer>
 }
 """
-        
-        return f"{system} {system_suffix}".strip()
+        return f"{system}\n{system_suffix}".strip()
 
     def _render_prompt(self, labeled_arguments: dict[str, Any]) -> str:
         return f"{labeled_arguments}"

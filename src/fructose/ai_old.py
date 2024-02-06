@@ -88,15 +88,10 @@ def get_system_prompt(func_docstring: str, return_type: str) -> str:
 First figure out what steps you need to take to solve the problem defined by the following: \"{func_docstring}. The return type should be {return_type}\"
         
 Then work through the problem. You can write code or pseudocode if necessary.
-
 You may be given a set of arguments to work with.
-
 Be concise and clear in your response.
-
 Take a deep breath and work through it step by step.
-
 Keep track of what was originally asked of you and make sure to actually answer correctly.
-
 If you don't know, try anyway. Believe in yourself.
     """.strip()
 
