@@ -8,7 +8,7 @@ from typing import Any, Type, TypeVar, get_args
 from collections.abc import Container
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 
-from fructose.type_parser import type_to_string, validate_return_type, describe_dataclass_as_dict, validate_container_type
+from fructose.type_parser import type_to_string, validate_return_type_for_function, describe_dataclass_as_dict, validate_container_type, perform_type_validation
 from . import function_helpers
 import openai
 
@@ -55,35 +55,21 @@ class Fructose():
         return result
 
     def _parse_llm_result(self, result: str, return_type: Type[T]) -> T:
-        json_result = json.loads(result)
 
-        # Very hacky but the logic is this:
-        # The json.loads might in some cases do the correct type conversion, for example for bools it will
+        json_result = json.loads(result)
         res = json_result['final_response']
 
-
-        # and for strings it does it as well, which is why we can early return 
-        # if return_type == str:
-        #     return res
-        
-        # But in more complicated cases we "double check" it by converting it to a string and then using ast.literal_eval
-        converted_value = ast.literal_eval(str(res))
-
-        # and only then do the type casting
+        # if the return type is a dataclass, we need to convert the result to a dataclass
         if dataclasses.is_dataclass(return_type):
-            typed_result = return_type(**converted_value)
+            typed_result = return_type(**res)
+        # if the return type is string we don't need to do anything
+        elif return_type == str:
+            typed_result = res
+        # else we use the ast lib to evaluate any string as a valid python expression
+        # this is needed e.g when the LLM returns "False" as a string
         else:
-            typed_result = return_type(converted_value)
-
-        # checks if the return type from the LLM is what the decorated function expects
-        return_type_args = get_args(return_type)
-        if return_type_args:
-            # this function will raise an error if the types don't match
-            validate_container_type(typed_result, return_type_args)
-        else: 
-            if type(typed_result) != return_type:
-                raise ValueError(f"Type cast failed, value {typed_result} is of type {type(typed_result)}, expected {return_type}")
-
+            res = ast.literal_eval(str(res))
+            typed_result = return_type(res)
 
         perform_type_validation(typed_result, return_type)
 
@@ -122,10 +108,12 @@ Answer with JSON in this format:
         def decorator(func):
             return_annotation = inspect.signature(func).return_annotation
             validate_return_type_for_function(func.__name__, return_annotation)
-            
+
+            # we want to convert the dataclass to a dict of specific format and then convert it to a string
             if dataclasses.is_dataclass(return_annotation):
                 return_annotation = describe_dataclass_as_dict(return_annotation)
                 return_type_str = str(return_annotation)
+            # all other types should be converted to a string straight away
             else:
                 return_type_str = type_to_string(return_annotation)
 
