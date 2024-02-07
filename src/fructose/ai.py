@@ -59,11 +59,12 @@ class Fructose():
 
         # Very hacky but the logic is this:
         # The json.loads might in some cases do the correct type conversion, for example for bools it will
-        res = json_result['the_actual_response_you_were_asked_for']
+        res = json_result['final_response']
+
 
         # and for strings it does it as well, which is why we can early return 
-        if return_type == str:
-            return res
+        # if return_type == str:
+        #     return res
         
         # But in more complicated cases we "double check" it by converting it to a string and then using ast.literal_eval
         converted_value = ast.literal_eval(str(res))
@@ -83,55 +84,31 @@ class Fructose():
             if type(typed_result) != return_type:
                 raise ValueError(f"Type cast failed, value {typed_result} is of type {type(typed_result)}, expected {return_type}")
 
+
+        perform_type_validation(typed_result, return_type)
+
         return typed_result
 
     def _render_system(self, func_doc_string: str, return_type_str: str ) -> str:
         system = f"""
-First figure out what steps you need to take to solve the problem defined by the following: 
-\"{func_doc_string.strip()}. The return type should be {return_type_str}.\"
-        
-Then work through the problem. You can write code or pseudocode if necessary.
+You are an AI assistant tasked with the following problem:
 
-You may be given a set of arguments to work with.
+{func_doc_string.strip()}
 
-Take a deep breath and work through it step by step.
+The user will provide you with the necessary arguments to solve the problem. Your response should be in the following format: {return_type_str}.
 
-Keep track of what was originally asked of you and make sure to actually answer correctly.
-
-Do NOT simply provide instructions for how to answer the question. You must actually answer the question.
-
-Your answer should be stand-alone. The user shouldn't need to come back and ask for completion.
-
-Be concise and clear in your response. 
-
-Do NOT add any additional explanation if not explicitly asked for. The answer should be usable as-is.
-
-If you don't know, try anyway. Believe in yourself.""".strip()
-        
-        system_suffix = """
 Answer with JSON in this format: 
-{
-    \"description_of_requested_answer\": <what was asked of you>,
-    \"answer_format\": <what should the answer look like? \"single word\", \"list of words\", \"float\", etc>, 
-    \"reasoning\": <your reasoning>, 
-    \"answer_prep_steps\": [
-        <step 1 in how you're preparing the answer>, 
-        <step 2>, 
-        ...
-    ], 
-    \"steps_applied\": [
-        <step 1 applied to the given inputs; use exact calculations were appropriate>, 
-        <step 2>, 
-        ...
-    ],
-    \"the_actual_response_you_were_asked_for\": <your final answer>
-}
-"""
-
+{{
+    \"chain_of_thought\": <use this as a scratch pad to reason over the request>, 
+    \"final_response\": <your final answer in the format requested: {return_type_str}>
+}}
+""".strip()
+        
         if "random" in self._flavors:
-            system_suffix = "\n\nRandom seed: " + str(os.urandom(16)) + "\n\n" + system_suffix
+            system += "\n\nRandom seed: " + str(os.urandom(16)) + "\n\n"
 
-        return f"{system}\n{system_suffix}".strip()
+        return system
+
 
     def _render_prompt(self, labeled_arguments: dict[str, Any]) -> str:
         return f"{labeled_arguments}"
@@ -144,7 +121,7 @@ Answer with JSON in this format:
 
         def decorator(func):
             return_annotation = inspect.signature(func).return_annotation
-            validate_return_type(func.__name__, return_annotation)
+            validate_return_type_for_function(func.__name__, return_annotation)
             
             if dataclasses.is_dataclass(return_annotation):
                 return_annotation = describe_dataclass_as_dict(return_annotation)

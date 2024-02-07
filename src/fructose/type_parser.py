@@ -14,7 +14,7 @@ class InvalidTypeException(Exception):
 class EmptyReturnException(Exception):
     pass
 
-def validate_return_type(func_name, return_type):
+def validate_return_type_for_function(func_name, return_type):
 
     if return_type is inspect.Signature.empty:
         raise EmptyReturnException(f"Return type for {func_name} is Empty. Please add a return type with this notation: def {func_name}(...) -> your_return_type:")
