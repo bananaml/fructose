@@ -20,10 +20,10 @@ def _validate_return_type_for_function(func_name, return_type):
     Validates that the return type is supported by Fructose.
     """
     if return_type is inspect.Signature.empty:
-        raise EmptyReturnException(f"Return type for {func_name} is Empty. Please add a return type with this notation: def {func_name}(...) -> your_return_type:")
+        raise type_parser.EmptyReturnException(f"Return type for {func_name} is Empty. Please add a return type with this notation: def {func_name}(...) -> your_return_type:")
 
     if not type_parser.is_supported_return_type(return_type):
-        raise NotImplementedError("Fructose does not support return type " + type_to_string(return_type) + " yet. Please use int, str, float, bool, or generic types.")
+        raise NotImplementedError("Fructose does not support return type " + type_parser.type_to_string(return_type) + " yet. Please use int, str, float, bool, or generic types.")
 
 
 class Fructose():
