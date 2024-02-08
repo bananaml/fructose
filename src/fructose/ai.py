@@ -4,17 +4,27 @@ import json
 import os
 import ast
 import dataclasses
-from typing import Any, Type, TypeVar, get_args
-from collections.abc import Container
+from typing import Any, Type, TypeVar
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 
-from fructose.type_parser import type_to_string, validate_return_type_for_function, describe_dataclass_as_dict, validate_container_type, perform_type_validation
+from fructose import type_parser
 from . import function_helpers
 import openai
 
 T = TypeVar('T')
 
 LabeledArguments = dict[str, Any]
+
+def _validate_return_type_for_function(func_name, return_type):
+    """
+    Validates that the return type is supported by Fructose.
+    """
+    if return_type is inspect.Signature.empty:
+        raise EmptyReturnException(f"Return type for {func_name} is Empty. Please add a return type with this notation: def {func_name}(...) -> your_return_type:")
+
+    if not type_parser.is_supported_return_type(return_type):
+        raise NotImplementedError("Fructose does not support return type " + type_to_string(return_type) + " yet. Please use int, str, float, bool, or generic types.")
+
 
 class Fructose():
     def __init__(self, client=None, model="gpt-4-turbo-preview"):
@@ -64,14 +74,14 @@ class Fructose():
             typed_result = return_type(**res)
         # if the return type is string we don't need to do anything
         elif return_type == str:
-            typed_result = res
+            typed_result = return_type(res)
         # else we use the ast lib to evaluate any string as a valid python expression
         # this is needed e.g when the LLM returns "False" as a string
         else:
             res = ast.literal_eval(str(res))
             typed_result = return_type(res)
 
-        perform_type_validation(typed_result, return_type)
+        type_parser.perform_type_validation(typed_result, return_type)
 
         return typed_result
 
@@ -107,15 +117,10 @@ Answer with JSON in this format:
 
         def decorator(func):
             return_annotation = inspect.signature(func).return_annotation
-            validate_return_type_for_function(func.__name__, return_annotation)
+            _validate_return_type_for_function(func.__name__, return_annotation)
 
-            # we want to convert the dataclass to a dict of specific format and then convert it to a string
-            if dataclasses.is_dataclass(return_annotation):
-                return_annotation = describe_dataclass_as_dict(return_annotation)
-                return_type_str = str(return_annotation)
-            # all other types should be converted to a string straight away
-            else:
-                return_type_str = type_to_string(return_annotation)
+
+            return_type_str = type_parser.type_to_string(return_annotation)
 
             rendered_system = self._render_system(func.__doc__, return_type_str)
 
