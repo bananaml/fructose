@@ -1,3 +1,4 @@
+from enum import Enum
 from core import FructoseEval
 from dataclasses import dataclass
 
@@ -7,6 +8,13 @@ class House:
   size: int
   is_occupied: bool 
 
+@dataclass
+class Person:
+  name: str
+  age: int
+  city: str
+  home: House
+
 
 @dataclass
 class Player:
@@ -14,6 +22,12 @@ class Player:
   def_: int
   name: str
   mana: int
+
+class Color(Enum):
+    LAVENDER = "lavender"
+    INDIGO = "indigo"
+    TERRACOTTA = "terracotta"
+
 
 class ElderberryEval(FructoseEval):
     """
@@ -76,7 +90,7 @@ class ElderberryEval(FructoseEval):
     @staticmethod
     def eval_generate_data(yeet, debug):
         @yeet(debug=debug)
-        def generate_data(schema: str) -> dict:
+        def generate_data(schema: str) -> dict[str, str]:
           """
           Generate data based on the given schema.
           """
@@ -92,6 +106,26 @@ class ElderberryEval(FructoseEval):
           """
 
         generate_dataclass()
+
+    @staticmethod
+    def eval_nested_dataclass(yeet, debug):
+        @yeet(debug=debug)
+        def nested_dataclass() -> Person:
+          """
+          Generate data based on the given schema.
+          """
+
+        nested_dataclass()
+
+    @staticmethod
+    def eval_enum(yeet, debug):
+        @yeet(debug=debug)
+        def enum() -> Color:
+          """
+          Pick a random color
+          """
+
+        enum()
 
     # TODO: more interesting eval based on content
     @staticmethod

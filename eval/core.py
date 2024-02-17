@@ -1,3 +1,4 @@
+import sys
 from fructose import Fructose
 yeet = Fructose()
 
@@ -11,6 +12,9 @@ class FructoseEval():
             for attr in dir(cls)
             if callable(getattr(cls, attr)) and attr.startswith("eval_")
         ]
+
+        if len(sys.argv) > 1:
+            functions = [f for f in functions if f == sys.argv[1]]
 
         score = 0
         for func in functions:

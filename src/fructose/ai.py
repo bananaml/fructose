@@ -69,21 +69,7 @@ class Fructose():
         json_result = json.loads(result)
         res = json_result['final_response']
 
-        # if the return type is a dataclass, we need to convert the result to a dataclass
-        if dataclasses.is_dataclass(return_type):
-            typed_result = return_type(**res)
-        # if the return type is string we don't need to do anything
-        elif return_type == str:
-            typed_result = return_type(res)
-        # else we use the ast lib to evaluate any string as a valid python expression
-        # this is needed e.g when the LLM returns "False" as a string
-        else:
-            res = ast.literal_eval(str(res))
-            typed_result = return_type(res)
-
-        type_parser.perform_type_validation(typed_result, return_type)
-
-        return typed_result
+        return type_parser.parse_json_to_type(res, return_type) 
 
     def _render_system(self, func_doc_string: str, return_type_str: str ) -> str:
         system = f"""
