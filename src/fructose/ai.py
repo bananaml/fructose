@@ -77,7 +77,7 @@ You are an AI assistant tasked with the following problem:
 
 {func_doc_string.strip()}
 
-The user will provide you with the necessary arguments to solve the problem. Your response should be in the following format: {return_type_str}.
+The user will provide you with a dictionary object with any necessary arguments to solve the problem (Note that the json object may be empty). Your response should be in the following format: {return_type_str}.
 
 Answer with JSON in this format: 
 {{

@@ -174,7 +174,7 @@ def _describe_dataclass_as_dict(cls) -> dict:
 def type_to_string(my_type):
     if _is_enum(my_type):
         members = [f'"{member.name}"' for member in my_type]
-        return f"str_literal[{' | '.join(members)}]"
+        return f"{' | '.join(members)}"
 
     if not type(my_type) in [type, types.GenericAlias]:
         raise InvalidTypeException(f"Invalid type: {my_type}")
