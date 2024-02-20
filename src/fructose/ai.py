@@ -28,13 +28,15 @@ def _validate_return_type_for_function(func_name, return_type):
 
 
 class Fructose():
-    def __init__(self, client=None, model=DEFAULT_MODEL):
+    def __init__(self, client=None, model=DEFAULT_MODEL, template=None, debug=False):
         if client is None:
             client = openai.Client(
                 api_key=os.environ['OPENAI_API_KEY']
             )
         self._client = client
         self._model = model
+        self._template = template
+        self._debug = debug
 
     def _call_llm(self, messages: list[ChatCompletionMessageParam], debug: bool) -> str:
         if debug:
@@ -79,7 +81,8 @@ class Fructose():
         if flavors is None:
             flavors = []
         _flavors = flavors
-        _template = template
+        _template = template if template is not None else self._template
+        _debug = debug if debug is True else self._debug
 
         def decorator(func):
             @wraps(func)
@@ -97,7 +100,7 @@ class Fructose():
                         content=rendered_prompt
                     )
                 ]
-                raw_result = self._call_llm(messages, debug)
+                raw_result = self._call_llm(messages, _debug)
                 result = self._parse_llm_result(raw_result, inspect.signature(func).return_annotation)
 
                 return result
@@ -107,14 +110,16 @@ class Fructose():
                     loader=PackageLoader("fructose", "templates")
                 else:
                     loader=FileSystemLoader(searchpath="./")
-                
+
                 jinja_env = Environment(
                     loader=loader,
                     undefined=StrictUndefined
                     # autoescape=select_autoescape()
                 )
 
-                system = jinja_env.get_template('chain_of_thought_json.jinja' if _template is None else _template)\
+                default_template = 'chain_of_thought_json.jinja'
+
+                system = jinja_env.get_template(default_template if _template is None else _template)\
                     .render(func_doc_string=func_doc_string, return_type_string=return_type_str)\
                     .strip()
                 
