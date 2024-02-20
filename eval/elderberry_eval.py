@@ -159,3 +159,23 @@ class ElderberryEval(FructoseEval):
           """
 
         write_github_stars_badge_html("bananaml/fructose")
+
+    @staticmethod
+    def eval_deep_nesting_out(ai, debug):
+        @ai(debug=debug)
+
+        def deep_nesting() -> dict[str, dict[str, list[dict[str, list[str]]]]]:
+          """
+          Generate a deeply nested data structure.
+          """
+        deep_nesting()
+
+    @staticmethod
+    def eval_deep_nesting_in(ai, debug):
+        @ai(debug=debug)
+
+        def deep_nesting(input: dict[str, dict[str, list[dict[str, list[str]]]]]) -> str:
+          """
+          Stringify the deeply nested data structure.
+          """
+        deep_nesting({"a": {"b": [{"c": ["d", "e"]}, {"f": ["g", "h", "i"]}]} })
