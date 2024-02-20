@@ -2,14 +2,15 @@ from functools import wraps
 import inspect
 import json
 import os
-import ast
-import dataclasses
 from typing import Any, Type, TypeVar
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
 
 from fructose import type_parser
 from . import function_helpers
 import openai
+
+# DEFAULT_MODEL = "gpt-4-turbo-preview"
+DEFAULT_MODEL = "gpt-3.5-turbo"
 
 T = TypeVar('T')
 
@@ -27,7 +28,7 @@ def _validate_return_type_for_function(func_name, return_type):
 
 
 class Fructose():
-    def __init__(self, client=None, model="gpt-4-turbo-preview"):
+    def __init__(self, client=None, model=DEFAULT_MODEL):
         if client is None:
             client = openai.Client(
                 api_key=os.environ['OPENAI_API_KEY']
