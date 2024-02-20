@@ -114,7 +114,7 @@ class Fructose():
                 )
 
                 system = jinja_env.get_template('chain_of_thought_json.jinja' if _template is None else _template)\
-                    .render(func_doc_string=func_doc_string, return_type_str=return_type_str)\
+                    .render(func_doc_string=func_doc_string, return_type_string=return_type_str)\
                     .strip()
                 
                 if "random" in _flavors:
