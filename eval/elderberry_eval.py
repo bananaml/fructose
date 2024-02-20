@@ -2,9 +2,14 @@ from enum import Enum
 from core import FructoseEval
 from dataclasses import dataclass
 
+class Color(Enum):
+    LAVENDER = "lavender"
+    INDIGO = "indigo"
+    TERRACOTTA = "terracotta"
+
 @dataclass
 class House:
-  color: str
+  color: Color
   size: int
   is_occupied: bool 
 
@@ -23,10 +28,11 @@ class Player:
   name: str
   mana: int
 
-class Color(Enum):
-    LAVENDER = "lavender"
-    INDIGO = "indigo"
-    TERRACOTTA = "terracotta"
+@dataclass
+class Marriage:
+    name: str
+    people: tuple[Person, Person]
+    date: str
 
 
 class ElderberryEval(FructoseEval):
@@ -179,3 +185,12 @@ class ElderberryEval(FructoseEval):
           Stringify the deeply nested data structure.
           """
         deep_nesting({"a": {"b": [{"c": ["d", "e"]}, {"f": ["g", "h", "i"]}]} })
+    def eval_wedding(ai, debug):
+        @ai(debug=debug)
+        def makeup_marriage() -> Marriage:
+            """
+            creates a made up marriage
+            """
+
+        makeup_marriage()
+
