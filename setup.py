@@ -11,7 +11,9 @@ setup(
         ],
     },
     install_requires=[
-        'openai'
+        'openai',
+        'click',
+        'Jinja2'
     ],
     # Additional metadata about your package
     author='Banana',
