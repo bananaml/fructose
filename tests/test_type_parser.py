@@ -45,8 +45,8 @@ def test_to_string():
     assert type_parser.type_to_string(tuple[str, int, float]) == 'tuple[str, int, float]'
 
     # test for enum
-    assert type_parser.type_to_string(Color) == '"RED" | "GREEN" | "BLUE"'
-    assert type_parser.type_to_string(Weekday) == '"MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY"'
+    assert type_parser.type_to_string(Color) == 'str["RED" | "GREEN" | "BLUE"]'
+    assert type_parser.type_to_string(Weekday) == 'str["MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY"]'
 
     # combine all
     assert type_parser.type_to_string(dict[str, list[tuple[str, int]]]) == 'dict[str, list[tuple[str, int]]]'

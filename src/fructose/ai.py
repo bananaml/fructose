@@ -4,7 +4,6 @@ import json
 import os
 from typing import Any, Type, TypeVar
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam
-
 from fructose import type_parser
 from . import function_helpers
 import openai
