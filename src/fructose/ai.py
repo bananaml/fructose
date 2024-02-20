@@ -7,7 +7,7 @@ from openai.types.chat import ChatCompletionMessageParam, ChatCompletionSystemMe
 from fructose import type_parser
 from . import function_helpers
 import openai
-from jinja2 import Environment, PackageLoader, FileSystemLoader, select_autoescape
+from jinja2 import Environment, PackageLoader, FileSystemLoader, select_autoescape, StrictUndefined
 
 # DEFAULT_MODEL = "gpt-4-turbo-preview"
 DEFAULT_MODEL = "gpt-3.5-turbo"
@@ -110,6 +110,7 @@ class Fructose():
                 
                 jinja_env = Environment(
                     loader=loader,
+                    undefined=StrictUndefined
                     # autoescape=select_autoescape()
                 )
 
