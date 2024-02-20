@@ -5,14 +5,8 @@ setup(
     version='0.0.3',
     packages=["fructose"],
     package_dir={'': 'src'},
-    entry_points={
-        'console_scripts': [
-            'fructose = fructose:cli',
-        ],
-    },
     install_requires=[
         'openai',
-        'click',
         'Jinja2'
     ],
     # Additional metadata about your package
