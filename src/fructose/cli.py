@@ -16,10 +16,9 @@ A package for strongly-typed LLM function calling
 @click.argument('path', type=click.Path(exists=False, dir_okay=True, file_okay=False), nargs=-1)
 def templates(path):
     '''
-Publish available prompt templates.
+Copy prompt templates for customization; default: project root.
     '''
     target_path = utils.get_target_dir(path)
-    click.echo(target_path)
 
     pkgdir = sys.modules['fructose'].__path__[0]
     fullpath = os.path.join(pkgdir, "templates")
