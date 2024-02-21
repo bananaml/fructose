@@ -1,4 +1,5 @@
-![Group 311 (1)](https://github.com/bananaml/fructose/assets/44653944/3073fb88-4ba8-4cea-a64a-04e7df33ff3f)
+<img width="326" alt="Group 311 (2)" src="https://github.com/bananaml/fructose/assets/44653944/8162425c-a485-460f-b816-bcc6be5d2cef">
+
 
 # LLM calls as strongly-typed functions
 Implement LLM calls as python functions, using the docstring and type signatures to establish the API.
