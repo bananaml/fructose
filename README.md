@@ -22,7 +22,7 @@ def describe(animals: list[str]) -> str:
 description = describe(["dog", "cat", "parrot", "goldfish"])
 print(description) # -> "pets" type: str
 ```
-The @ai() decorator introspects the function and builds a prompt to an LLM to perform the task whenever the function is invoked.
+The `@ai()` decorator introspects the function and builds a prompt to an LLM to perform the task whenever the function is invoked.
 
 Fructose supports:
 - args, kwargs, and return types
