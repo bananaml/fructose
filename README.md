@@ -38,6 +38,39 @@ It currently executes the prompt with gpt-4, so you'll need to use your own Open
 export OPENAI_API_KEY=sk-abcdefghijklmnopqrstuvwxyz
 ```
 
+### Customizing prompts
+
+To use a custom template in your `@ai()` function, you would add a new argument to the decorator, 
+pointing to the custom template in your project:
+
+```python
+@ai(template="relative/path/to/my_template.jinja")
+def my_func():
+    ...
+```
+
+We have a built-in chain-of-thought system prompt that "just works" in most cases:
+
+```jinja
+You are an AI assistant tasked with the following problem:
+
+{{ func_doc_string|trim() }}
+
+The user will provide you with a dictionary object with any necessary arguments to solve the problem (Note that the json object may be empty). 
+
+Your response should be in the following format: {{ return_type_string|trim() }}.
+
+Answer with JSON in this format: 
+{{ '{' }}
+    \"chain_of_thought\": <use this as a scratch pad to reason over the request>, 
+    \"final_response\": <your final answer in the format requested: {{ return_type_string|trim() }}>
+{{ '}' }}
+```
+
+When customizing this locally, make sure to include the `func_doc_string` and `return_type_string` variables in your template.
+
+If you don't include those two variables, the `@ai()` decorator will almost certainly fail.
+
 ---
 
 ### Stability
