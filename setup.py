@@ -2,16 +2,12 @@ from setuptools import setup
 
 setup(
     name='fructose',
-    version='0.0.3',
+    version='0.0.4',
     packages=["fructose"],
     package_dir={'': 'src'},
-    entry_points={
-        'console_scripts': [
-            'fructose = fructose:cli',
-        ],
-    },
     install_requires=[
-        'openai'
+        'openai',
+        'Jinja2'
     ],
     # Additional metadata about your package
     author='Banana',
