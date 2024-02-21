@@ -43,8 +43,7 @@ It currently executes the prompt with gpt-4 by default, so you'll need to use yo
 export OPENAI_API_KEY=sk-abcdefghijklmnopqrstuvwxyz
 ```
 
-
-## Examples
+## Features
 
 ### Complex DataTypes
 
@@ -75,18 +74,23 @@ print(person)
 ```
 
 
-### Customizing prompts
+### Custom prompt templates
 
-To use a custom template in your `@ai()` function, you would add a new argument to the decorator, 
-pointing to the custom template in your project:
+Fructose has a built-in chain-of-thought system prompt that "just works" in most cases, but you're free to bring your own, using the Jinja templating language.
+
+To use a custom template, use the `template` argument in the `@ai()` decorator, with a relative path to your Jinja template file:
 
 ```python
 @ai(template="relative/path/to/my_template.jinja")
 def my_func():
-    ...
+    # ...
 ```
 
-We have a built-in chain-of-thought system prompt that "just works" in most cases:
+The template must include the following variables:
+-  `func_doc_string`: the docstring from the decorated function
+-  `return_type_string`: the string-representation of the function's return types
+
+For reference, here's the default Jinja template:
 
 ```jinja
 You are an AI assistant tasked with the following problem:
@@ -103,10 +107,6 @@ Answer with JSON in this format:
     \"final_response\": <your final answer in the format requested: {{ return_type_string|trim() }}>
 {{ '}' }}
 ```
-
-When customizing this locally, make sure to include the `func_doc_string` and `return_type_string` variables in your template.
-
-If you don't include those two variables, the `@ai()` decorator will almost certainly fail.
 
 ---
 
