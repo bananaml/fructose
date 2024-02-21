@@ -2,7 +2,51 @@
 
 
 # LLM calls as strongly-typed functions
-Implement LLM calls as python functions, using the docstring and type signatures to establish the API.
+
+Fructose is a python package to create a dependable, strongly-typed interface around an LLM call.
+
+It's lightweight syntactic sugar.
+
+Just slap the `@ai()` decorator on a type-annotated function and call it as you would a function.
+
+``` python
+from fructose import Fructose
+ai = Fructose()
+
+@ai()
+def describe(animals: list[str]) -> str:
+  """
+  Given a list of animals, use one word that'd describe them all.
+  """
+
+description = describe(["dog", "cat", "parrot", "goldfish"])
+print(description) # -> "pets" type: str
+```
+The @ai() decorator introspects the function and builds a prompt to an LLM to perform the task whenever the function is invoked.
+
+Fructose supports:
+- args, kwargs, and return types
+- primative types `str` `bool` `int` `float`
+- compound types `list` `dict` `tuple` `Enum` 
+- complex datatypes `@dataclass`
+- nested types
+- custom prompt templates
+
+# 
+## Installation
+``` bash
+pip3 install fructose
+```
+
+It currently executes the prompt with gpt-4 by default, so you'll need to use your own OpenAI API Key
+``` bash
+export OPENAI_API_KEY=sk-abcdefghijklmnopqrstuvwxyz
+```
+
+
+## Examples
+
+### Complex DataTypes
 
 ``` python
 from fructose import Fructose
@@ -29,17 +73,7 @@ def generate_fake_person_data() -> Person:
 person = generate_fake_person_data()
 print(person)
 ```
-The @ai() decorator introspects the function and builds a prompt to an LLM to perform the task whenever the function is invoked.
 
-### To Install
-``` bash
-pip3 install fructose
-```
-
-It currently executes the prompt with gpt-4, so you'll need to use your own OpenAI API Key
-``` bash
-export OPENAI_API_KEY=sk-abcdefghijklmnopqrstuvwxyz
-```
 
 ---
 
