@@ -1,7 +1,7 @@
 # Fructose: LLM calls as strongly-typed functions
-<img width="515" alt="Fructose logo" src="https://github.com/bananaml/fructose/assets/44653944/f6415c69-3107-4d9c-b4cb-395185ef00a4">
-
 Implement LLM calls as python functions, using the docstring and type signatures to establish the API.
+<img width="800" alt="Fructose logo" src="https://github.com/bananaml/fructose/assets/44653944/f6415c69-3107-4d9c-b4cb-395185ef00a4">
+
 ``` python
 from fructose import Fructose
 from dataclasses import dataclass
