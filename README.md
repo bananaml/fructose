@@ -1,5 +1,6 @@
-# Fructose: LLM calls as strongly-typed functions
 ![Group 311](https://github.com/bananaml/fructose/assets/44653944/61e0ecff-0fd4-425e-886c-207f6b672228)
+
+# LLM calls as strongly-typed functions
 Implement LLM calls as python functions, using the docstring and type signatures to establish the API.
 
 ``` python
