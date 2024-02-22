@@ -126,6 +126,9 @@ class Fructose():
                 for func in uses
             ]
 
+            if debug:
+                print(f"\033[91mTools: {tools}\033[0m")
+
 
         def decorator(func):
             @wraps(func)
