@@ -1,5 +1,5 @@
 import inspect
-from typing import Any
+from typing import Any, Callable
 
 ALLOWED_PARAMETER_KINDS = [
     inspect.Parameter.POSITIONAL_OR_KEYWORD,
@@ -27,3 +27,25 @@ def collect_arguments(func, args, kwargs) -> dict[str, Any]:
             arguments[name] = param.default
 
     return arguments
+
+
+def convert_function_to_openai_function(func: Callable) -> dict[str, Any]:
+    """
+    Converts a function to an OpenAI function.
+    """
+    return {
+        "type": "function",
+        "function": {
+            "name": func.__name__,
+            "description": func.__doc__,
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    name: {
+                        "type": "string", # TODO: Support other types
+                    }
+                    for name, param in inspect.signature(func).parameters.items()
+                }
+            }
+        }
+    }
