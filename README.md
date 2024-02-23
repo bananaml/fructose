@@ -74,7 +74,7 @@ print(person)
 
 ### Local Function Calling
 
-Fructose `ai()` functions can choose to call local Python functions.
+Fructose `ai()` functions can choose to call local Python functions. Yes, even other `@ai()` functions!
 
 Pass the functions into the decorator with the `uses` argument: `@ai(uses = [func_1, func_2])`
 
