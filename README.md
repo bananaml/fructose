@@ -78,7 +78,7 @@ Fructose `ai()` functions can choose to call local Python functions.
 
 Pass the functions into the decorator with the `uses` argument: `@ai(uses = [func_1, func_2])`
 
-For example, here's a fructose function using the `requests` library with a `def get()` function we've programmed.
+For example, here's a fructose function fetching HackerNews comments using a local function and the `requests` library:
 
 ``` python
 from fructose import Fructose
