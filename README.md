@@ -98,12 +98,7 @@ class Comment:
     username: str
     comment: str
 
-@ai(
-    uses=[
-        get
-    ],
-    debug=True
-)
+@ai(uses=[get], debug=True)
 def get_comments(uri: str) -> list[Comment]:
     """
     Gets all base comments from a hacker news post
