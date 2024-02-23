@@ -29,6 +29,7 @@ Fructose supports:
 - complex datatypes `@dataclass`
 - nested types
 - custom prompt templates
+- local function calling
 
 # 
 ## Installation
@@ -71,6 +72,49 @@ person = generate_fake_person_data()
 print(person)
 ```
 
+### Local Function Calling
+
+Fructose `ai()` functions can choose to call local Python functions.
+
+Pass the functions into the decorator with the `uses` argument: `@ai(uses = [func_1, func_2])`
+
+For example, here's a fructose function using the `requests` library with a `def get()` function we've programmed.
+
+``` python
+from fructose import Fructose
+import requests
+from dataclasses import dataclass
+
+ai = Fructose()
+
+def get(uri: str) -> str:
+    """
+    GET request to a URI
+    """
+    return requests.get(uri).text
+
+@dataclass
+class Comment:
+    username: str
+    comment: str
+
+@ai(
+    uses=[
+        get
+    ],
+    debug=True
+)
+def get_comments(uri: str) -> list[Comment]:
+    """
+    Gets all base comments from a hacker news post
+    """
+    
+
+result = get_comments("https://news.ycombinator.com/item?id=22963649")
+
+for comment in result:
+    print(f"🧑 {comment.username}: \n💬 {comment.comment}\n")
+```
 
 ### Custom prompt templates
 
