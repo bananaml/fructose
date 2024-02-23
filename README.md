@@ -5,9 +5,7 @@
 
 Fructose is a python package to create a dependable, strongly-typed interface around an LLM call.
 
-It's lightweight syntactic sugar.
-
-Just slap the `@ai()` decorator on a type-annotated function and call it as you would a function.
+Just slap the `@ai()` decorator on a type-annotated function and call it as you would a function. It's lightweight, syntactic sugar.
 
 ``` python
 from fructose import Fructose
