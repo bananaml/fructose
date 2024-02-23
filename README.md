@@ -116,6 +116,14 @@ for comment in result:
     print(f"🧑 {comment.username}: \n💬 {comment.comment}\n")
 ```
 
+Local function calling currently requires:
+- type annotations on the function
+- docstring on the function
+- sane variable names for arguments
+  
+And supports arguments of basic types:
+- `str` `bool` `int` `float` and `list`
+
 ### Custom prompt templates
 
 Fructose has a built-in chain-of-thought system prompt that "just works" in most cases, but you're free to bring your own, using the Jinja templating language.
