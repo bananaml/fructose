@@ -37,7 +37,7 @@ Fructose supports:
 pip3 install fructose
 ```
 
-It currently executes the prompt with GPT-3.5-turbo by default, so you'll need to use your own OpenAI API Key
+It currently executes the prompt with GPT-4-turbo by default, so you'll need to use your own OpenAI API Key
 ``` bash
 export OPENAI_API_KEY=sk-abcdefghijklmnopqrstuvwxyz
 ```
