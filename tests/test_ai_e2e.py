@@ -1,5 +1,6 @@
+import re
 from fructose import Fructose
-AI = Fructose()
+ai = Fructose()
 
 # In all cases, we assert the return type
 
@@ -11,7 +12,7 @@ AI = Fructose()
 # Type - to - Type tests
 
 def test_str2str():
-    @AI()
+    @ai()
     def echo(words: str) -> str:
         """
         Repeat the input string back to the user.
@@ -23,7 +24,7 @@ def test_str2str():
     
 
 def test_str2int():
-    @AI()
+    @ai()
     def len_str(words: str) -> int:
         """
         Return the length of the input string.
@@ -34,7 +35,7 @@ def test_str2int():
 
 
 def test_none2int():
-    @AI()
+    @ai()
     def none2int() -> int:
         """
         Return the integer 42.
@@ -45,7 +46,7 @@ def test_none2int():
     assert type(res) == int
 
 def test_none2str():
-    @AI()
+    @ai()
     def none2str() -> str:
         """
         Return the string "42".
@@ -56,7 +57,7 @@ def test_none2str():
     assert type(res) == str
 
 def test_none2float():
-    @AI()
+    @ai()
     def none2float() -> float:
         """
         Return the float 42.0.
@@ -67,7 +68,7 @@ def test_none2float():
     assert type(res) == float
 
 def test_none2bool():
-    @AI()
+    @ai()
     def none2bool() -> bool:
         """
         Return the boolean True.
@@ -78,7 +79,7 @@ def test_none2bool():
     assert type(res) == bool
 
 def test_bool2bool():
-    @AI(debug=True)
+    @ai(debug=True)
     def bool2bool(boolean: bool) -> bool:
         """
         Return the input boolean value.
@@ -93,7 +94,7 @@ def test_bool2bool():
     assert type(res) == bool
 
 def test_bool2int():
-    @AI()
+    @ai()
     def bool2int(boolean: bool) -> int:
         """
         Return an integer, 1 if the input is True, 0 if the input is False.
@@ -109,7 +110,7 @@ def test_bool2int():
     assert type(res) == int
 
 def test_bool2str():
-    @AI()
+    @ai()
     def bool2str(boolean: bool) -> str:
         """
         Return the string "TRUE" if the input is True, "FALSE" if the input is False. It must be in all caps.
@@ -124,7 +125,7 @@ def test_bool2str():
     assert type(res) == str
 
 def test_listint2int():
-    @AI()
+    @ai()
     def listint2listint(numbers: list[int]) -> int:
         """
         Return the first integer in the list.
@@ -139,7 +140,7 @@ def test_listint2int():
 # Mixed Args KWArgs tests
 
 def test_kwargs():
-    @AI()
+    @ai()
     def logical_and(bool1: bool, bool2: bool) -> bool:
         """
         Return the logical AND of the two input booleans.
@@ -150,7 +151,7 @@ def test_kwargs():
     assert type(res) == bool
 
 def test_mixed_order_kwargs():
-    @AI()
+    @ai()
     def logical_and(bool1: bool, bool2: bool) -> bool:
         """
         Return the logical AND of the two input booleans.
@@ -161,7 +162,7 @@ def test_mixed_order_kwargs():
     assert type(res) == bool
 
 def test_mixed_positional_kwargs():
-    @AI()
+    @ai()
     def logical_and(bool1: bool, bool2: bool) -> bool:
         """
         Return the logical AND of the two input booleans.
@@ -171,3 +172,54 @@ def test_mixed_positional_kwargs():
     res = logical_and(True, bool2 = False)
     assert res == False
     assert type(res) == bool
+
+def test_uses_add_function():
+    add_called = False
+    def add(a: int, b: int) -> int:
+        """
+        Return the sum of the two input integers.
+        """
+        nonlocal add_called
+        add_called = True
+        return a + b
+
+    @ai(uses=[add], debug=True)
+    def add_two_numbers(a: int, b: int) -> int:
+        """
+        Return the sum of the two input integers.
+        """
+
+    res = add_two_numbers(1, 2)
+    assert res == 3
+    assert add_called == True
+
+
+def test_uses_regex_function():
+    regex_matches_called = False
+    def regex_matches(pattern: str, strings: list[str]) -> bool:
+        """
+        Return True if the pattern matches all the strings, False otherwise.
+        """
+        nonlocal regex_matches_called
+        regex_matches_called = True
+
+        for string in strings:
+            if not bool(re.match(pattern, string)):
+                return False
+        return True
+
+    @ai(uses=[regex_matches], debug=True)
+    def generate_regex(positive_examples: list[str], negative_examples: list[str]) -> str:
+        """
+        Return a regex pattern that matches all the positive example strings. Uses regex_matches to validate the result
+        """
+
+    result = generate_regex(["hello", "world"], ["HELLO", "WORLD"])
+
+    for example in ["hello", "world"]:
+        assert regex_matches(result, example)
+    for example in ["HELLO", "WORLD"]:
+        assert not regex_matches(result, example)
+
+    assert regex_matches_called == True
+
