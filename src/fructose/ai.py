@@ -153,7 +153,10 @@ class Fructose():
 
             def _render_system(func_doc_string: str, return_type_str: str ) -> str:
                 if _template is None:
-                    loader=PackageLoader("fructose", "templates")
+                    # loader=PackageLoader("fructose", "templates")
+                    loader = FileSystemLoader(
+                        os.path.join(os.path.dirname(__file__), 'templates')
+                    )
                 else:
                     loader=FileSystemLoader(searchpath="./")
 
