@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import re
 from fructose import Fructose
 ai = Fructose()
@@ -222,4 +223,20 @@ def test_uses_regex_function():
         assert not regex_matches(result, example)
 
     assert regex_matches_called == True
+
+@dataclass
+class Point:
+    x: int
+    y: int
+
+    @staticmethod
+    @ai()
+    def generate_point() -> "Point":
+        """
+        Return a random point.
+        """
+
+def test_forward_ref_type_parser():
+    res = Point.generate_point()
+    assert type(res) == Point
 

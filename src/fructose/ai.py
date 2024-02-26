@@ -2,7 +2,7 @@ from functools import wraps
 import inspect
 import json
 import os
-from typing import Any, Type, TypeVar
+from typing import Any, ForwardRef, Type, TypeVar, get_type_hints
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam, ChatCompletionToolMessageParam
 from pathlib import Path
 from fructose import type_parser
@@ -131,26 +131,6 @@ class Fructose():
 
 
         def decorator(func):
-            @wraps(func)
-            def wrapper(*args, **kwargs):
-                labeled_arguments = function_helpers.collect_arguments(func, args, kwargs)
-                rendered_prompt = self._render_prompt(labeled_arguments)
-
-                messages = [
-                    ChatCompletionSystemMessageParam(
-                        role="system",
-                        content=rendered_system
-                    ),
-                    ChatCompletionUserMessageParam(
-                        role="user",
-                        content=rendered_prompt
-                    )
-                ]
-                raw_result = self._call_llm(messages, tools, uses, debug)
-                result = self._parse_llm_result(raw_result, inspect.signature(func).return_annotation)
-
-                return result
-
             def _render_system(func_doc_string: str, return_type_str: str ) -> str:
                 if _template is None:
                     # loader=PackageLoader("fructose", "templates")
@@ -175,13 +155,40 @@ class Fructose():
                     system += "\n\nRandom seed: " + str(os.urandom(16)) + "\n\n"
 
                 return system
-            
+
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                type_hints = get_type_hints(func)
+                return_annotation = type_hints.get('return', inspect.Signature.empty)
+                _validate_return_type_for_function(func.__name__, return_annotation)
+
+                return_type_str = type_parser.type_to_string(return_annotation)
+
+                rendered_system = _render_system(func.__doc__, return_type_str)
+
+                labeled_arguments = function_helpers.collect_arguments(func, args, kwargs)
+                rendered_prompt = self._render_prompt(labeled_arguments)
+
+                messages = [
+                    ChatCompletionSystemMessageParam(
+                        role="system",
+                        content=rendered_system
+                    ),
+                    ChatCompletionUserMessageParam(
+                        role="user",
+                        content=rendered_prompt
+                    )
+                ]
+                raw_result = self._call_llm(messages, tools, uses, debug)
+                result = self._parse_llm_result(raw_result, return_annotation)
+
+                return result
+
             return_annotation = inspect.signature(func).return_annotation
-            _validate_return_type_for_function(func.__name__, return_annotation)
 
-            return_type_str = type_parser.type_to_string(return_annotation)
-
-            rendered_system = _render_system(func.__doc__, return_type_str)
+            # if the return type is a string, we assume it's a forward reference and delay the validation
+            if not isinstance(return_annotation, str):
+                _validate_return_type_for_function(func.__name__, return_annotation)
             
             return wrapper
         
