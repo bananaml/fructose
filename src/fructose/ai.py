@@ -4,7 +4,7 @@ import json
 import os
 from typing import Any, Type, TypeVar
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam, ChatCompletionToolMessageParam
-
+from pathlib import Path
 from fructose import type_parser
 from . import function_helpers
 import openai
@@ -153,10 +153,9 @@ class Fructose():
 
             def _render_system(func_doc_string: str, return_type_str: str ) -> str:
                 if _template is None:
-                    loader=PackageLoader("fructose", "templates")
-                    # loader = FileSystemLoader(
-                    #     os.path.join(os.path.dirname(__file__), 'templates')
-                    # )
+                    # loader=PackageLoader("fructose", "templates")
+                    p = Path(__file__).parent / 'templates'
+                    loader = FileSystemLoader(p)
                 else:
                     loader=FileSystemLoader(searchpath="./")
 
