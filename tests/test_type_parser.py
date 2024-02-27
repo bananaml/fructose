@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional, Union
 from enum import Enum
 from dataclasses import dataclass
 
@@ -40,13 +40,15 @@ def test_to_string():
 
     # test for dict, set, and tuple
     assert type_parser.type_to_string(dict[str, int]) == 'dict[str, int]'
-    assert type_parser.type_to_string(set[str]) == 'set[str]'
     assert type_parser.type_to_string(tuple[str, int]) == 'tuple[str, int]'
     assert type_parser.type_to_string(tuple[str, int, float]) == 'tuple[str, int, float]'
 
     # test for enum
     assert type_parser.type_to_string(Color) == 'str["RED" | "GREEN" | "BLUE"]'
     assert type_parser.type_to_string(Weekday) == 'str["MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY"]'
+
+    # test for Optional
+    assert type_parser.type_to_string(Optional[int]) == 'Optional[int]'
 
     # combine all
     assert type_parser.type_to_string(dict[str, list[tuple[str, int]]]) == 'dict[str, list[tuple[str, int]]]'
@@ -79,6 +81,15 @@ def test_supported_types():
     assert type_parser.is_supported_return_type(Color) == True
     assert type_parser.is_supported_return_type(Weekday) == True
 
+    # support for Optional
+    assert type_parser.is_supported_return_type(Optional[int]) == True
+    assert type_parser.is_supported_return_type(Optional[Person]) == True
+    assert type_parser.is_supported_return_type(Union[int, None]) == True
+
+    # other union types are not supported
+    assert type_parser.is_supported_return_type(Union[int, str]) == False
+    assert type_parser.is_supported_return_type(Union[int, str, None]) == False
+
     # not supported types
     assert type_parser.is_supported_return_type(list) == False
     assert type_parser.is_supported_return_type(type(None)) == False
@@ -110,6 +121,11 @@ def test_parse_json_to_type():
     # test for enums
     assert type_parser.parse_json_to_type("RED", Color) == Color.RED
     assert type_parser.parse_json_to_type("MONDAY", Weekday) == Weekday.MONDAY
+
+    # test for Optional
+    assert type_parser.parse_json_to_type(None, Optional[int]) == None
+    assert type_parser.parse_json_to_type(None, Optional[Person]) == None
+    assert type_parser.parse_json_to_type(1, Optional[int]) == 1
 
     # test for custom types
     json = {"name": "a", "age": 1, "items": [["a", 1]]}

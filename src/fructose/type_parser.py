@@ -1,6 +1,6 @@
 from enum import Enum
 import types
-from typing import get_origin, get_type_hints, Any, get_args
+from typing import Union, get_origin, get_type_hints, Any, get_args
 import dataclasses
 
 _primitive_types = set([int, str, float, bool])
@@ -30,11 +30,24 @@ def _is_enum(cls):
     except:
         return False
 
+def _is_optional(tp):
+    """
+    Check if a type is Optional or Union with exactly two arguments.
+
+    :param tp: The type to check.
+    :return: True if the type is Union with exactly two arguments, False otherwise.
+    """
+    origin = get_origin(tp)
+    if origin is Union:
+        args = get_args(tp)
+        if len(args) ==  2 and any(arg is type(None) for arg in args):
+            return True
+    return False
+
 def _is_supported_wrapper_type(return_type):
     origin = get_origin(return_type)
     if origin not in _wrapper_types:
         return False
-
 
     # Small hack to not support the typing module, better to catch it here than to let users do the LLM call
     # and then get an error.
@@ -65,11 +78,9 @@ def is_supported_return_type(return_type):
         return_type in _primitive_types,
         _is_supported_dataclass(return_type),
         _is_enum(return_type),
-        _is_enum(return_type),
+        _is_optional(return_type),
         _is_supported_wrapper_type(return_type),
     ])
-
-
 
 def _parse_tuple(json_result, return_type: type[tuple]):
     if type(json_result) != list:
@@ -116,11 +127,22 @@ def _parse_enum(json_result, enum):
 
     raise ValueError(f"Value {json_result} is not a valid member of {enum}")
 
+def _parse_optional(json_result, return_type: type[Union]):
+    args = get_args(return_type)
+    if len(args) != 2 or not any(arg is type(None) for arg in args) or all(arg is type(None) for arg in args):
+        raise ValueError(f"Union type {return_type} is not supported by Fructose.")
+
+    if json_result is None:
+        return None
+
+    sub_type = next(arg for arg in args if arg is not type(None))
+    return parse_json_to_type(json_result, sub_type)
 
 _json_type_parser_lookup = {
     list: _parse_list,
     dict: _parse_dict,
     tuple: _parse_tuple,
+    Union: _parse_optional,
 }
 
 def _parse_dataclass(json_result, return_type):
@@ -171,28 +193,45 @@ def _describe_dataclass_as_dict(cls) -> dict:
     
     return description
 
-def type_to_string(my_type):
+def _enum_to_string(tp):
+    members = [f'"{member.name}"' for member in tp]
+    return f"str[{' | '.join(members)}]"
+
+def _dataclass_to_string(tp):
+    description =  _describe_dataclass_as_dict(tp)
+    result = "{" + \
+        ", ".join([f"{k}: {v}" for k, v in description.items()]) + \
+        "}"
+    return result
+
+def _primitive_to_string(tp) -> str:
+    return tp.__name__
+
+def _wrapper_to_string(tp):
+    prefix = tp.__name__
+    args = getattr(tp, "__args__")
+    if not args:
+        raise InvalidTypeException(f"Invalid type: {tp}")
+    formatted_args = [type_to_string(arg) for arg in args]
+    return f"{prefix}[{', '.join(formatted_args)}]"
+
+def _optional_to_string(tp):
+    types = tp.__args__
+    optional_type = [t for t in types if t != type(None)][0]
+    optional_type_str = type_to_string(optional_type)
+    return f"Optional[{optional_type_str}]"
+
+
+def type_to_string(my_type) -> str:
     if _is_enum(my_type):
-        members = [f'"{member.name}"' for member in my_type]
-        return f"str[{' | '.join(members)}]"
-
-    if not type(my_type) in [type, types.GenericAlias]:
-        raise InvalidTypeException(f"Invalid type: {my_type}")
-
+        return _enum_to_string(my_type)
     if dataclasses.is_dataclass(my_type):
-        description =  _describe_dataclass_as_dict(my_type)
-        result = "{" + \
-            ", ".join([f"{k}: {v}" for k, v in description.items()]) + \
-            "}"
-        return result
-    else:
-        prefix = my_type.__name__
+        return _dataclass_to_string(my_type)
+    if _is_optional(my_type):
+        return _optional_to_string(my_type)
+    if my_type in _primitive_types:
+        return _primitive_to_string(my_type)
+    if _is_supported_wrapper_type(my_type):
+        return _wrapper_to_string(my_type)
 
-        # TODO probably want to handle tuples better here
-
-        if hasattr(my_type, "__args__"):
-            args = getattr(my_type, "__args__")
-            formatted_args = [type_to_string(arg) for arg in args]
-            return f"{prefix}[{', '.join(formatted_args)}]"
-        else:
-            return prefix
+    raise InvalidTypeException(f"Invalid type: {my_type}")

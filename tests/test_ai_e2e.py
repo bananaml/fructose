@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 import re
+from typing import Optional
 from fructose import Fructose
 ai = Fructose()
 
@@ -240,3 +241,14 @@ def test_forward_ref_type_parser():
     res = Point.generate_point()
     assert type(res) == Point
 
+def test_optional():
+    @ai()
+    def maybe_get_int(instructions: str) -> Optional[int]:
+        """
+        based on the given instructions, decides to return an int or not
+        """
+
+    result = maybe_get_int("give me the number 5")
+    assert result == 5
+    result = maybe_get_int("don't give me a number")
+    assert result == None

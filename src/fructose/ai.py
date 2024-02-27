@@ -2,13 +2,13 @@ from functools import wraps
 import inspect
 import json
 import os
-from typing import Any, ForwardRef, Type, TypeVar, get_type_hints
+from typing import Any, Type, TypeVar, get_type_hints
 from openai.types.chat import ChatCompletionMessageParam, ChatCompletionSystemMessageParam, ChatCompletionUserMessageParam, ChatCompletionToolMessageParam
 from pathlib import Path
 from fructose import type_parser
 from . import function_helpers
 import openai
-from jinja2 import Environment, PackageLoader, FileSystemLoader, select_autoescape, StrictUndefined
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 DEFAULT_MODEL = "gpt-4-turbo-preview"
 # DEFAULT_MODEL = "gpt-3.5-turbo"
