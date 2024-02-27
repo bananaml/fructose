@@ -135,7 +135,7 @@ class Fructose():
                 if _template is None:
                     # loader=PackageLoader("fructose", "templates")
                     p = Path(__file__).parent / 'templates'
-                    loader = FileSystemLoader(p)
+                    loader=FileSystemLoader(p)
                 else:
                     loader=FileSystemLoader(searchpath="./")
 

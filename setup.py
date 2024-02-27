@@ -2,9 +2,10 @@ from setuptools import setup
 
 setup(
     name='fructose',
-    version='0.0.8',
+    version='0.0.9',
     packages=["fructose"],
     package_dir={'': 'src'},
+    include_package_data=True,
     install_requires=[
         'openai',
         'Jinja2'
