@@ -113,11 +113,15 @@ class Fructose():
         return f"{labeled_arguments}"
 
 
-    def __call__(self, uses=None, flavors=None, template=None, debug=False):
+    def __call__(self, uses=None, flavors=None, template=None, debug=None):
         if flavors is None:
             flavors = []
         _flavors = flavors
         _template = template if template is not None else self._template
+
+        if debug is None:
+            # if debug is not set on decoration, use the default value from the decorator's constructor
+            debug = self._debug
 
         tools = None
         if uses is not None:
