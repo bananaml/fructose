@@ -106,8 +106,6 @@ class LLMFunctionHandler():
                 last_non_tool_message = i
         messages = messages[:last_non_tool_message + 1]
 
-        print(messages)
-
         chat_completion = self._client.chat.completions.create(
             model=self._model,
             messages=messages,
@@ -135,10 +133,6 @@ class LLMFunctionHandler():
                     # purple other
                     print(f"\033[95mOther: {message}\033[0m")
 
-        # extend tools with chain of thought
-        tools = self._tools
-        if tools == None:
-            tools = []
         perform_cot = {
             "type": "function",
             "function": {
@@ -146,12 +140,17 @@ class LLMFunctionHandler():
                 "description": "Call this to think about the problem before trying to solve. Generally it's a good idea to call this before deciding what tools to use or before returning a final answer",
                 "parameters": {}
             }
-        }    
-        extended_tools = [
-            *tools
-        ]
+        }
+        tool_extension = []
         if "chain_of_thought" in self._flavors:
-            extended_tools.append(perform_cot)
+            tool_extension.append(perform_cot)
+
+        # extend tools with chain of thought
+        tools = self._tools
+        extended_tools = None
+        if tools != None or tool_extension:
+            extended_tools = [*(tools or []), *tool_extension]
+
 
         if self._debug:
             # print tools in yellow
