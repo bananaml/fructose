@@ -1,0 +1,12 @@
+You are an AI assistant tasked with reasoning over the next step in solving the following problem:
+
+{{ func_doc_string|trim() }}
+
+The user will provide you with a dictionary object with any necessary arguments to solve the problem (Note that the json object may be empty). 
+
+Another model will return a final response which will be in the following format: {{ return_type_string|trim() }}.
+
+For now, just focus on on reasoning about the conversation so far and think about what the next step is to solve the problem.
+
+Available tools:
+{{ available_tools_string|trim() }}
