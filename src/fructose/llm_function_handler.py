@@ -6,7 +6,7 @@ from typing import Any, Callable, Type, TypeVar, get_type_hints
 
 import openai
 import jinja2
-from openai.types.chat import ChatCompletionSystemMessageParam, ChatCompletionToolMessageParam, ChatCompletionUserMessageParam
+from openai.types.chat import ChatCompletionAssistantMessageParam, ChatCompletionSystemMessageParam, ChatCompletionToolMessageParam, ChatCompletionUserMessageParam
 from . import function_helpers, type_parser, types
 
 
@@ -118,6 +118,20 @@ class LLMFunctionHandler():
 
     # TODO this function is way too long
     def _call_llm(self, messages):
+        if "chain_of_thought" in self._flavors:
+            result = self._call_chain_of_thought(messages)
+            messages = [
+                *messages,
+                ChatCompletionAssistantMessageParam(
+                    role="assistant",
+                    content=result,
+                ),
+                ChatCompletionUserMessageParam(
+                    role="user",
+                    content="using the above reasoning, either call a function or reply in the format requested"
+                )
+            ]
+
         if self._debug:
             for message in messages:
                 if message['role'] == "system":
@@ -133,33 +147,10 @@ class LLMFunctionHandler():
                     # purple other
                     print(f"\033[95mOther: {message}\033[0m")
 
-        perform_cot = {
-            "type": "function",
-            "function": {
-                "name": "perform_chain_of_thought",
-                "description": "Call this to think about the problem before trying to solve. Generally it's a good idea to call this before deciding what tools to use or before returning a final answer",
-                "parameters": {}
-            }
-        }
-        tool_extension = []
-        if "chain_of_thought" in self._flavors:
-            tool_extension.append(perform_cot)
-
-        # extend tools with chain of thought
-        tools = self._tools
-        extended_tools = None
-        if tools != None or tool_extension:
-            extended_tools = [*(tools or []), *tool_extension]
-
-
-        if self._debug:
-            # print tools in yellow
-            print(f"\033[91mTools: {extended_tools}\033[0m")
-
         chat_completion = self._client.chat.completions.create(
             model=self._model,
             messages=messages,
-            tools=extended_tools,
+            tools=self._tools,
             response_format={
                 "type":"json_object",
             },
@@ -178,10 +169,7 @@ class LLMFunctionHandler():
                 print(f"\033[91mTool Calls: {tool_calls}\033[0m")
             for tool_call in tool_calls:
                 name = tool_call.function.name
-                if name == perform_cot['function']['name']:
-                    result = self._call_chain_of_thought(messages)
-                else:
-                    result = self._uses_lookup[name](**json.loads(tool_call.function.arguments))
+                result = self._uses_lookup[name](**json.loads(tool_call.function.arguments))
 
                 tool_message = ChatCompletionToolMessageParam(
                     role="tool",
@@ -192,8 +180,6 @@ class LLMFunctionHandler():
 
             return self._call_llm(messages)
 
-        if self._debug:
-            print(result)
 
 
         if result is None:
@@ -219,6 +205,8 @@ class LLMFunctionHandler():
         ]
 
         raw_result = self._call_llm(messages)
+
+        print("RAW RESULT[" + raw_result + "]")
 
         result = _parse_llm_result(raw_result, self._return_annotation)
 
