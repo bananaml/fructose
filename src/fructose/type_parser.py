@@ -152,6 +152,8 @@ def _parse_dataclass(json_result, return_type):
     for field in dataclasses.fields(return_type):
         field_name = field.name
         field_type = field.type
+        if field_name not in json_result:
+            raise ValueError(f"Field {field_name} is missing from the JSON object representing {return_type}")
         args[field_name] = parse_json_to_type(json_result[field_name], field_type)
 
     return return_type(**args)

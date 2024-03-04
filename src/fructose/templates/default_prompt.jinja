@@ -8,6 +8,5 @@ Your response should be in the following format: {{ return_type_string|trim() }}
 
 Answer with JSON in this format: 
 {{ '{' }}
-    \"chain_of_thought\": <use this as a scratch pad to reason over the request>, 
-    \"final_response\": <your final answer in the format requested: {{ return_type_string|trim() }}>
+    \"response\": <your final answer in the format requested: {{ return_type_string|trim() }}>
 {{ '}' }}

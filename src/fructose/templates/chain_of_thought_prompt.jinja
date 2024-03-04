@@ -1,0 +1,16 @@
+You are an AI assistant tasked with solving the following problem:
+
+{{ func_doc_string|trim() }}
+
+The user will provide you with a dictionary object with any necessary arguments to solve the problem (Note that the json object may be empty). 
+
+Available tools:
+{{ available_tools_string|trim() }}
+
+Respond in the following format:
+
+# chain of thought
+< use this area as a scratch pad to think through the problem >
+
+# conclusion
+< decide on either using an available tool, or what the final answer to the problem is >

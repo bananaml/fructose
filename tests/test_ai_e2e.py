@@ -213,17 +213,15 @@ def test_uses_regex_function():
     @ai(uses=[regex_matches], debug=True)
     def generate_regex(positive_examples: list[str], negative_examples: list[str]) -> str:
         """
-        Return a regex pattern that matches all the positive example strings. Uses regex_matches to validate the result
+        Return a regex pattern that matches all the positive example strings. Uses regex_matches to validate the result before returning a final result.
         """
 
     result = generate_regex(["hello", "world"], ["HELLO", "WORLD"])
 
-    for example in ["hello", "world"]:
-        assert regex_matches(result, example)
-    for example in ["HELLO", "WORLD"]:
-        assert not regex_matches(result, example)
-
     assert regex_matches_called == True
+    assert regex_matches(result, ["hello", "world"])
+    assert not regex_matches(result, ["HELLO", "WORLD"])
+
 
 @dataclass
 class Point:
