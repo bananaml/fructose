@@ -39,11 +39,20 @@ class Fructose():
         self._chain_of_thought_template_path = chain_of_thought_template_path
         self._debug = debug
 
-    def __call__(self, uses=None, flavors=None, system_template_path=None, chain_of_thought_template_path=None, debug=False):
+    def __call__(
+            self,
+            uses=None,
+            flavors=None,
+            system_template_path=None,
+            chain_of_thought_template_path=None,
+            model=None,
+            debug=False,
+        ):
         if flavors is None:
             flavors = ["chain_of_thought"]
         if debug is None:
             debug = self._debug
+        model = model or self._model
 
         system_template_path = system_template_path or self._system_template_path
         chain_of_thought_template_path = chain_of_thought_template_path or self._chain_of_thought_template_path
@@ -61,7 +70,7 @@ class Fructose():
         def decorator(func):
             llm_function_handler = LLMFunctionHandler(
                 client=self._client,
-                model=self._model,
+                model=model,
                 func=func,
                 uses=uses,
                 flavors=flavors,

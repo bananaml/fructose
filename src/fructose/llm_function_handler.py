@@ -11,6 +11,7 @@ from . import function_helpers, type_parser, types
 
 
 T = TypeVar('T')
+DEFAULT_RETRIES = 3
 
 def _validate_return_type_for_function(func_name, return_type):
     """
@@ -24,7 +25,9 @@ def _validate_return_type_for_function(func_name, return_type):
 
 def _parse_llm_result(result: str, return_type: Type[T]) -> T:
     json_result = json.loads(result)
-    res = json_result['final_response']
+    if 'response' not in json_result:
+        raise ValueError("response not in json_result")
+    res = json_result['response']
 
     return type_parser.parse_json_to_type(res, return_type) 
 
@@ -38,7 +41,8 @@ class LLMFunctionHandler():
         flavors: list[types.FructoseFlavor],
         system_template: jinja2.Template,
         chain_of_thought_template: jinja2.Template,
-        debug: bool
+        debug: bool,
+        retries: int = DEFAULT_RETRIES
     ):
         self._client = client
         self._model = model
@@ -52,6 +56,7 @@ class LLMFunctionHandler():
         self._system_message = None
         self._chain_of_thought_message = None
         self._return_annotation = None
+        self._retries = retries
 
         # if the return annotation is a string, then it's a forward reference and we can't validate it
         return_annotation = inspect.signature(func).return_annotation
@@ -117,7 +122,7 @@ class LLMFunctionHandler():
 
 
     # TODO this function is way too long
-    def _call_llm(self, messages):
+    def _perform_llm_reasoning(self, messages):
         if "chain_of_thought" in self._flavors:
             result = self._call_chain_of_thought(messages)
             messages = [
@@ -178,14 +183,22 @@ class LLMFunctionHandler():
                 )
                 messages = [*messages, tool_message]
 
-            return self._call_llm(messages)
+            return self._perform_llm_reasoning(messages)
 
 
 
         if result is None:
             raise Exception("OpenAI chat completion failed")
 
-        return result
+        messages = [
+            *messages,
+            ChatCompletionAssistantMessageParam(
+                role="assistant",
+                content=result,
+            )
+        ]
+
+        return result, messages
 
     def __call__(self, *args, **kwargs):
         if self._system_message is None:
@@ -204,11 +217,35 @@ class LLMFunctionHandler():
             )
         ]
 
-        raw_result = self._call_llm(messages)
+        raw_result, messages = self._perform_llm_reasoning(messages)
+        result = None
+        # retry logic is only necessary when not using Banana Brain
+        for _ in range(self._retries):
+            if self._debug:
+                print(f"\033[94mRaw Result: {raw_result}\033[0m")
 
-        print("RAW RESULT[" + raw_result + "]")
+            try:
+                result = _parse_llm_result(raw_result, self._return_annotation)
+                break
+            except ValueError as e:
+                if self._debug:
+                    print(f"\033[91mParse Error: {e}. Retrying...\033[0m")
+                messages = [
+                    *messages,
+                    ChatCompletionUserMessageParam(
+                        role="user",
+                        content="Parse Error: " + str(e) + ". Please try again."
+                    )
+                ]
 
-        result = _parse_llm_result(raw_result, self._return_annotation)
+                chat_completion = self._client.chat.completions.create(
+                    model=self._model,
+                    messages=messages,
+                )
 
+                raw_result = chat_completion.choices[0].message.content
+
+        if result is None:
+            raise ValueError("Parsing Failed after retries")
         return result
 
