@@ -168,7 +168,7 @@ Getting creative but strongly typed responses from LLMs is particularly useful i
 
 Here's a prototype of an alien creature merging/breeding game: https://twitter.com/entreprenik/status/1758948061202809066
 
-![](https://pbs.twimg.com/media/GGjpueBa4AAEFP0?format=jpg&name=512x512)
+![fructose in game dev](https://pbs.twimg.com/media/GGjpueBa4AAEFP0?format=jpg&name=4096x4096 "fructose in gamedev")
 
 ## Developing and Contributing
 
