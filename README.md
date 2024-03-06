@@ -161,22 +161,7 @@ The template must include the following variables:
 -  `func_doc_string`: the docstring from the decorated function
 -  `return_type_string`: the string-representation of the function's return types
 
-For reference, here's the default Jinja template:
-
-```jinja
-You are an AI assistant tasked with the following problem:
-
-{{ func_doc_string|trim() }}
-
-The user will provide you with a dictionary object with any necessary arguments to solve the problem (Note that the json object may be empty). 
-
-Your response should be in the following format: {{ return_type_string|trim() }}.
-
-Answer with JSON in this format: 
-{{ '{' }}
-    \"response\": <your final answer in the format requested: {{ return_type_string|trim() }}>
-{{ '}' }}
-```
+For reference, [find the default template here](https://github.com/bananaml/fructose/blob/main/src/fructose/templates/default_prompt.jinja)
 
 ### Custom Chain Of Thought Prompt Templates
 
@@ -194,6 +179,8 @@ def my_func():
 ```
 
 You can also set this on the decorator level, to make it default for all decorated functions.
+
+For reference, [find the default chain-of-thought template here](https://github.com/bananaml/fructose/blob/main/src/fructose/templates/chain_of_thought_prompt.jinja)
 
 ---
 
