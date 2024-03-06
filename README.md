@@ -160,7 +160,17 @@ Answer with JSON in this format:
 We are in v0, meaning the API is unstable version-to-version. Pin your versions to ensure new builds don't break!
 Also note... since LLM generations are nondeterminsitic, the calls may break too!
 
-### To develop
+## Use Cases
+
+### Gaming
+
+Getting creative but strongly typed responses from LLMs is particularly useful in game dev scenarios.
+
+Here's a prototype of an alien creature merging/breeding game: https://twitter.com/entreprenik/status/1758948061202809066
+
+![](https://pbs.twimg.com/media/GGjpueBa4AAEFP0?format=jpg&name=512x512)
+
+## Developing and Contributing
 
 From the root of this repo:
 
