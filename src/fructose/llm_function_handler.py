@@ -2,8 +2,7 @@
 import inspect
 import json
 import os
-from typing import Any, Callable, Type, TypeVar, get_type_hints
-
+from typing import Any, Callable, Optional, Type, TypeVar, get_type_hints
 import openai
 import jinja2
 from openai.types.chat import ChatCompletionAssistantMessageParam, ChatCompletionSystemMessageParam, ChatCompletionToolMessageParam, ChatCompletionUserMessageParam
@@ -87,7 +86,7 @@ class LLMFunctionHandler():
 
     @property
     def _tools(self):
-        if self._uses == None:
+        if self._uses == None or self._uses == []:
             return None
         return [
             function_helpers.convert_function_to_openai_function(func)
@@ -219,6 +218,7 @@ class LLMFunctionHandler():
 
         raw_result, messages = self._perform_llm_reasoning(messages)
         result = None
+        
         # retry logic is only necessary when not using Banana Brain
         for _ in range(self._retries):
             if self._debug:
@@ -245,7 +245,7 @@ class LLMFunctionHandler():
 
                 raw_result = chat_completion.choices[0].message.content
 
-        if result is None:
+        if result is None and not type_parser._is_optional(self._return_annotation):
             raise ValueError("Parsing Failed after retries")
         return result
 

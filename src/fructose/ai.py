@@ -41,15 +41,13 @@ class Fructose():
 
     def __call__(
             self,
-            uses=None,
-            flavors=None,
+            uses=[],
+            flavors=[],
             system_template_path=None,
             chain_of_thought_template_path=None,
             model=None,
             debug=False,
         ):
-        if flavors is None:
-            flavors = ["chain_of_thought"]
         if debug is None:
             debug = self._debug
         model = model or self._model
