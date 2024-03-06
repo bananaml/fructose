@@ -25,7 +25,7 @@ The `@ai()` decorator introspects the function and builds a prompt to an LLM to 
 Fructose supports:
 - args, kwargs, and return types
 - primative types `str` `bool` `int` `float`
-- compound types `list` `dict` `tuple` `Enum` 
+- compound types `list` `dict` `tuple` `Enum` `Optional`
 - complex datatypes `@dataclass`
 - nested types
 - custom prompt templates
@@ -37,14 +37,14 @@ Fructose supports:
 pip3 install fructose
 ```
 
-It currently executes the prompt with GPT-4-turbo by default (but you can change that at initialization, e.g., `ai = Fructose(model="gpt-3.5-turbo")`), so you'll need to use your own OpenAI API Key
+It currently executes the prompt with OpenAI, so you'll need to use your own OpenAI API Key
 ``` bash
 export OPENAI_API_KEY=sk-abcdefghijklmnopqrstuvwxyz
 ```
 
-## Features
+# Features
 
-### Complex DataTypes
+## Complex DataTypes
 
 ``` python
 from fructose import Fructose
@@ -72,9 +72,9 @@ person = generate_fake_person_data()
 print(person)
 ```
 
-### Local Function Calling
+## Local Function Calling
 
-Fructose `ai()` functions can choose to call local Python functions. Yes, even other `@ai()` functions!
+Fructose `ai()` functions can choose to call local Python functions. Yes, even other `@ai()` functions.
 
 Pass the functions into the decorator with the `uses` argument: `@ai(uses = [func_1, func_2])`
 
@@ -119,43 +119,86 @@ Local function calling currently requires:
 And supports arguments of basic types:
 - `str` `bool` `int` `float` and `list`
 
-### Custom prompt templates
+# Config
 
-Fructose has a built-in chain-of-thought system prompt that "just works" in most cases, but you're free to bring your own, using the Jinja templating language.
-
-To use a custom template, use the `template` argument in the `@ai()` decorator, with a relative path to your Jinja template file:
-
+Most config may be set at the decorator level:
 ```python
-@ai(template="relative/path/to/my_template.jinja")
+ai = Fructose(*args, **kwargs)
+```
+or at the function level
+```python
+@ai(*args, **kwargs)
+```
+
+## Model type
+Select your OpenAI model with the `model` keyword. Defaults to `gpt-4-turbo-preview`
+```python
+ai = Fructose(model = "gpt-3.5-turbo")
+```
+
+## Prompting
+Fructose has a lightweight prompt wrapper that "just works" in most cases, but you're free to modify it using the below Flavors and Templates features.
+Note: we're not satisfied with this specific API, so feel free to give suggestions for alternatives.
+
+### Flavors
+Flavors are optional flags to change the behavior of the prompt.
+- `random`: adds a random seed into the system prompt, to add a bit more variability
+- `chain_of_thought`: splits calls into two steps: chain of thought for reasoning, then the structured generation.
+
+decorator level:
+```python
+ai = Fructose(["random", "chain_of_thought"])
+```
+
+or function level:
+```python
+@ai(flavors=["random", "chain_of_thought"])
 def my_func():
     # ...
 ```
+
+### Custom System Prompt Templates
+
+You're free to bring your own prompt template, using the Jinja templating language.
+
+To use a custom template on a function level, use the `system_template_path` argument in the `@ai()` decorator, with a relative path to your Jinja template file:
+
+```python
+@ai(system_template_path="relative/path/to/my_template.jinja")
+def my_func():
+    # ...
+```
+
+You can also set this on the decorator level, to make it default for all decorated functions.
 
 The template must include the following variables:
 -  `func_doc_string`: the docstring from the decorated function
 -  `return_type_string`: the string-representation of the function's return types
 
-For reference, here's the default Jinja template:
+For reference, [find the default template here](https://github.com/bananaml/fructose/blob/main/src/fructose/templates/default_prompt.jinja)
 
-```jinja
-You are an AI assistant tasked with the following problem:
+### Custom Chain Of Thought Prompt Templates
 
-{{ func_doc_string|trim() }}
+In the case of the `chain_of_thought` flavor being used, fructose will first run a chain-of-thought call, using a special system prompt. 
 
-The user will provide you with a dictionary object with any necessary arguments to solve the problem (Note that the json object may be empty). 
+Customize it on the function level with the `chain_of_thought_template_path` argument in the `@ai()` decorator.
 
-Your response should be in the following format: {{ return_type_string|trim() }}.
-
-Answer with JSON in this format: 
-{{ '{' }}
-    \"chain_of_thought\": <use this as a scratch pad to reason over the request>, 
-    \"final_response\": <your final answer in the format requested: {{ return_type_string|trim() }}>
-{{ '}' }}
+```python
+@ai(
+    flavors = ["chain_of_thought"], 
+    chain_of_thought_template_path="relative/path/to/my_template.jinja"
+)
+def my_func():
+    # ...
 ```
+
+You can also set this on the decorator level, to make it default for all decorated functions.
+
+For reference, [find the default chain-of-thought template here](https://github.com/bananaml/fructose/blob/main/src/fructose/templates/chain_of_thought_prompt.jinja)
 
 ---
 
-### Stability
+## Stability
 
 We are in v0, meaning the API is unstable version-to-version. Pin your versions to ensure new builds don't break!
 Also note... since LLM generations are nondeterminsitic, the calls may break too!
