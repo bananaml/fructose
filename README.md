@@ -25,7 +25,7 @@ The `@ai()` decorator introspects the function and builds a prompt to an LLM to 
 Fructose supports:
 - args, kwargs, and return types
 - primative types `str` `bool` `int` `float`
-- compound types `list` `dict` `tuple` `Enum` 
+- compound types `list` `dict` `tuple` `Enum` `Optional`
 - complex datatypes `@dataclass`
 - nested types
 - custom prompt templates
@@ -37,7 +37,7 @@ Fructose supports:
 pip3 install fructose
 ```
 
-It currently executes the prompt with GPT-4-turbo by default (but you can change that at initialization, e.g., `ai = Fructose(model="gpt-3.5-turbo")`), so you'll need to use your own OpenAI API Key
+It currently executes the prompt with OpenAI, so you'll need to use your own OpenAI API Key
 ``` bash
 export OPENAI_API_KEY=sk-abcdefghijklmnopqrstuvwxyz
 ```
@@ -74,7 +74,7 @@ print(person)
 
 ### Local Function Calling
 
-Fructose `ai()` functions can choose to call local Python functions. Yes, even other `@ai()` functions!
+Fructose `ai()` functions can choose to call local Python functions. Yes, even other `@ai()` functions.
 
 Pass the functions into the decorator with the `uses` argument: `@ai(uses = [func_1, func_2])`
 
@@ -119,17 +119,43 @@ Local function calling currently requires:
 And supports arguments of basic types:
 - `str` `bool` `int` `float` and `list`
 
-### Custom prompt templates
+## Customizing prompts via Flavors and your own templates
 
-Fructose has a built-in chain-of-thought system prompt that "just works" in most cases, but you're free to bring your own, using the Jinja templating language.
+Fructose has a lightweight prompt wrapper that "just works" in most cases, but you're free to modify it. 
 
-To use a custom template, use the `template` argument in the `@ai()` decorator, with a relative path to your Jinja template file:
+Note: This is an area of the API we're still figuring out, feel free to give your own suggestions.
 
+### Flavors
+
+Flavors are optional flags to change the behavior of the prompt.
+- `random`: adds a random seed into the system prompt, to add a bit more variability
+- `chain_of_thought`: splits calls into two steps: chain of thought for reasoning, then the structured generation.
+
+You can set these on the decorator level:
 ```python
-@ai(template="relative/path/to/my_template.jinja")
+ai = Fructose(["random", "chain_of_thought"])
+```
+
+Or on the function level:
+```python
+@ai(flavors=["random", "chain_of_thought"])
 def my_func():
     # ...
 ```
+
+### Custom System Prompt Templates
+
+You're free to bring your own prompt template, using the Jinja templating language.
+
+To use a custom template on a function level, use the `system_template_path` argument in the `@ai()` decorator, with a relative path to your Jinja template file:
+
+```python
+@ai(system_template_path="relative/path/to/my_template.jinja")
+def my_func():
+    # ...
+```
+
+You can also set this on the decorator level, to make it default for all decorated functions.
 
 The template must include the following variables:
 -  `func_doc_string`: the docstring from the decorated function
@@ -148,10 +174,26 @@ Your response should be in the following format: {{ return_type_string|trim() }}
 
 Answer with JSON in this format: 
 {{ '{' }}
-    \"chain_of_thought\": <use this as a scratch pad to reason over the request>, 
-    \"final_response\": <your final answer in the format requested: {{ return_type_string|trim() }}>
+    \"response\": <your final answer in the format requested: {{ return_type_string|trim() }}>
 {{ '}' }}
 ```
+
+### Custom Chain Of Thought Prompt Templates
+
+In the case of the `chain_of_thought` flavor being used, fructose will first run a chain-of-thought call, using a special system prompt. 
+
+Customize it on the function level with the `chain_of_thought_template_path` argument in the `@ai()` decorator.
+
+```python
+@ai(
+    flavors = ["chain_of_thought"], 
+    chain_of_thought_template_path="relative/path/to/my_template.jinja"
+)
+def my_func():
+    # ...
+```
+
+You can also set this on the decorator level, to make it default for all decorated functions.
 
 ---
 
