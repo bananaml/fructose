@@ -42,9 +42,9 @@ It currently executes the prompt with OpenAI, so you'll need to use your own Ope
 export OPENAI_API_KEY=sk-abcdefghijklmnopqrstuvwxyz
 ```
 
-## Features
+# Features
 
-### Complex DataTypes
+## Complex DataTypes
 
 ``` python
 from fructose import Fructose
@@ -72,7 +72,7 @@ person = generate_fake_person_data()
 print(person)
 ```
 
-### Local Function Calling
+## Local Function Calling
 
 Fructose `ai()` functions can choose to call local Python functions. Yes, even other `@ai()` functions.
 
@@ -119,24 +119,38 @@ Local function calling currently requires:
 And supports arguments of basic types:
 - `str` `bool` `int` `float` and `list`
 
-## Customizing prompts via Flavors and your own templates
+# Config
 
-Fructose has a lightweight prompt wrapper that "just works" in most cases, but you're free to modify it. 
+Most config may be set at the decorator level:
+```python
+ai = Fructose(*args, **kwargs)
+```
+or at the function level
+```python
+@ai(*args, **kwargs)
+```
 
-Note: This is an area of the API we're still figuring out, feel free to give your own suggestions.
+## Model type
+Select your OpenAI model with the `model` keyword. Defaults to `gpt-4-turbo-preview`
+```python
+ai = Fructose(model = "gpt-3.5-turbo")
+```
+
+## Prompting
+Fructose has a lightweight prompt wrapper that "just works" in most cases, but you're free to modify it using the below Flavors and Templates features.
+Note: we're not satisfied with this specific API, so feel free to give suggestions for alternatives.
 
 ### Flavors
-
 Flavors are optional flags to change the behavior of the prompt.
 - `random`: adds a random seed into the system prompt, to add a bit more variability
 - `chain_of_thought`: splits calls into two steps: chain of thought for reasoning, then the structured generation.
 
-You can set these on the decorator level:
+decorator level:
 ```python
 ai = Fructose(["random", "chain_of_thought"])
 ```
 
-Or on the function level:
+or function level:
 ```python
 @ai(flavors=["random", "chain_of_thought"])
 def my_func():
@@ -184,12 +198,12 @@ For reference, [find the default chain-of-thought template here](https://github.
 
 ---
 
-### Stability
+## Stability
 
 We are in v0, meaning the API is unstable version-to-version. Pin your versions to ensure new builds don't break!
 Also note... since LLM generations are nondeterminsitic, the calls may break too!
 
-### To develop
+## To develop
 
 From the root of this repo:
 
