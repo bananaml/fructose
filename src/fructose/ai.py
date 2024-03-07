@@ -1,6 +1,6 @@
 from functools import wraps
 import os
-from typing import Any
+from typing import Any, Callable, Optional
 from pathlib import Path
 from .llm_function_handler import LLMFunctionHandler
 import openai
@@ -41,6 +41,8 @@ class Fructose():
 
     def __call__(
             self,
+            func: Optional[Callable] = None,
+            *, # Enforce keyword-only arguments
             uses=[],
             flavors=[],
             system_template_path=None,
@@ -48,6 +50,18 @@ class Fructose():
             model=None,
             debug=False,
         ):
+
+        if func is not None and callable(func):
+            # This means the decorator is used without parentheses, provide default args
+            return self.__call__(
+                uses=uses,
+                flavors=flavors,
+                system_template_path=system_template_path,
+                chain_of_thought_template_path=chain_of_thought_template_path,
+                model=model,
+                debug=debug
+            )(func)
+
         if debug is None:
             debug = self._debug
         model = model or self._model

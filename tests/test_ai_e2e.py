@@ -19,6 +19,7 @@ def test_str2str():
         """
         Repeat the input string back to the user.
         """
+        ...
     
     res = echo("onomatopoeia")
     assert type(res) == str
@@ -31,6 +32,7 @@ def test_str2int():
         """
         Return the length of the input string.
         """
+        ...
     
     res = len_str("onomatopoeia")
     assert type(res) == int
@@ -42,6 +44,7 @@ def test_none2int():
         """
         Return the integer 42.
         """
+        ...
     
     res = none2int()
     assert res == 42
@@ -53,6 +56,7 @@ def test_none2str():
         """
         Return the string "42".
         """
+        ...
     
     res = none2str()
     assert res == "42"
@@ -64,6 +68,7 @@ def test_none2float():
         """
         Return the float 42.0.
         """
+        ...
     
     res = none2float()
     assert res == 42.0
@@ -75,6 +80,7 @@ def test_none2bool():
         """
         Return the boolean True.
         """
+        ...
     
     res = none2bool()
     assert res == True
@@ -86,6 +92,7 @@ def test_bool2bool():
         """
         Return the input boolean value.
         """
+        ...
     
     res = bool2bool(True)
     assert res == True
@@ -102,6 +109,7 @@ def test_bool2int():
         Return an integer, 1 if the input is True, 0 if the input is False.
         Valid return values are 1 and 0.
         """
+        ...
     
     res = bool2int(True)
     assert res == 1
@@ -117,6 +125,7 @@ def test_bool2str():
         """
         Return the string "TRUE" if the input is True, "FALSE" if the input is False. It must be in all caps.
         """
+        ...
     
     res = bool2str(True)
     assert res == "TRUE"
@@ -132,10 +141,24 @@ def test_listint2int():
         """
         Return the first integer in the list.
         """
+        ...
     
     res = listint2listint([1, 2, 3])
     assert res == 1
     assert type(res) == int
+
+def test_optional():
+    @ai()
+    def maybe_get_int(instructions: str) -> Optional[int]:
+        """
+        based on the given instructions, decides to return an int or not
+        """
+        ...
+
+    result = maybe_get_int("give me the number 5")
+    assert result == 5
+    result = maybe_get_int("don't give me a number")
+    assert result == None
 
 
 # ----
@@ -147,6 +170,7 @@ def test_kwargs():
         """
         Return the logical AND of the two input booleans.
         """
+        ...
 
     res = logical_and(bool1 = True, bool2 = False)
     assert res == False
@@ -158,6 +182,7 @@ def test_mixed_order_kwargs():
         """
         Return the logical AND of the two input booleans.
         """
+        ...
 
     res = logical_and(bool2 = False, bool1 = True)
     assert res == False
@@ -169,6 +194,7 @@ def test_mixed_positional_kwargs():
         """
         Return the logical AND of the two input booleans.
         """
+        ...
         
     # mixed positional and kwargs
     res = logical_and(True, bool2 = False)
@@ -190,6 +216,7 @@ def test_uses_add_function():
         """
         Return the sum of the two input integers.
         """
+        ...
 
     res = add_two_numbers(1, 2)
     assert res == 3
@@ -215,6 +242,7 @@ def test_uses_regex_function():
         """
         Return a regex pattern that matches all the positive example strings. Uses regex_matches to validate the result before returning a final result.
         """
+        ...
 
     result = generate_regex(["hello", "world"], ["HELLO", "WORLD"])
 
@@ -222,6 +250,21 @@ def test_uses_regex_function():
     assert regex_matches(result, ["hello", "world"])
     assert not regex_matches(result, ["HELLO", "WORLD"])
 
+
+# ----
+# Python quirks
+    
+def test_decorator_without_args():
+    @ai
+    def add(a: int, b: int) -> int:
+        """
+        Return the sum of the two input integers.
+        """
+        ...
+    
+    res = add(1, 2)
+    assert res == 3
+    assert type(res) == int
 
 @dataclass
 class Point:
@@ -234,19 +277,8 @@ class Point:
         """
         Return a random point.
         """
+        ...
 
 def test_forward_ref_type_parser():
     res = Point.generate_point()
     assert type(res) == Point
-
-def test_optional():
-    @ai()
-    def maybe_get_int(instructions: str) -> Optional[int]:
-        """
-        based on the given instructions, decides to return an int or not
-        """
-
-    result = maybe_get_int("give me the number 5")
-    assert result == 5
-    result = maybe_get_int("don't give me a number")
-    assert result == None
