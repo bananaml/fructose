@@ -12,7 +12,6 @@ header = """
 (  __)(  _ \/ )( \ / __)(_  _)/  \ / ___)(  __)
  ) _)  )   /) \/ (( (__   )( (  O )\___ \ ) _) 
 (__)  (__\_)\____/ \___) (__) \__/ (____/(____)
-
 """
 
 # decorate your function to call an LLM. Your ways to guide the LLM are through the docstring,
@@ -31,6 +30,7 @@ def generate_static_site() -> str:
     The background should be a light gradient. Every section be centered. The page as large as the
     viewport. Boxes should have rounded corners. The site should be professional and modern. 
     """
+    ...
 
 def create_handler(html_content):
     class CustomHTTPRequestHandler(BaseHTTPRequestHandler):

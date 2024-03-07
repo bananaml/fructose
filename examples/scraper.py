@@ -25,9 +25,10 @@ def get_comments(uri: str) -> list[Comment]:
     """
     Gets all base comments from a hacker news post
     """
+    ...
     
 
-result = get_comments("https://news.ycombinator.com/item?id=22963649")
+result = get_comments("https://news.ycombinator.com/item?id=39619053")
 
 for comment in result:
     print(f"🧑 {comment.username}: \n💬 {comment.comment}\n")
