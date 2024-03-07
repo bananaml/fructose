@@ -31,6 +31,7 @@ def generate_static_site() -> str:
     The background should be a light gradient. Every section be centered. The page as large as the
     viewport. Boxes should have rounded corners. The site should be professional and modern. 
     """
+    ...
 
 def create_handler(html_content):
     class CustomHTTPRequestHandler(BaseHTTPRequestHandler):

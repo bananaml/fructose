@@ -22,9 +22,10 @@ def receive_attack(player_state: Player, dmg: int, crit_chance: float) -> Player
   """
   Simulates a player receiving an attack. If crit, then double the dmg amount. Crit is randomly rolled during this turn based on crit_chance. Subtracts def_ from final dmg.
   """
+  ...
 
 def main():
-    state = receive_attack({"hp": 100, "def_": 10, "name": "Jack Sparrow", "mana": 55}, 12, 0.3)
+    state = receive_attack(Player(hp=100, def_=0, name="Jack Sparrow", mana= 55), 12, 0.3)
     print(state)
 
 if __name__ == "__main__":

@@ -16,6 +16,7 @@ def describe(animals: list[str]) -> str:
   """
   Given a list of animals, use one word that'd describe them all.
   """
+  ...
 
 description = describe(["dog", "cat", "parrot", "goldfish"])
 print(description) # -> "pets" type: str
@@ -67,6 +68,7 @@ def generate_fake_person_data() -> Person:
   """
     Generate fake data for a cliche aspiring author
   """
+  ...
 
 person = generate_fake_person_data()
 print(person)
@@ -103,6 +105,7 @@ def get_comments(uri: str) -> list[Comment]:
     """
     Gets all base comments from a hacker news post
     """
+    ...
     
 
 result = get_comments("https://news.ycombinator.com/item?id=22963649")

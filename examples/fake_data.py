@@ -24,6 +24,7 @@ def generate_fake_person_data() -> Person:
   """
     Generate fake data for a cliche aspiring author
   """
+  ...
 
 def main():
     person = generate_fake_person_data()
