@@ -23,9 +23,9 @@ It should be boring.
 Please suggest them using `Issues`.
 
 We're especially interested in finding a better API for:
-- dynamic system prompts. How can users change / modify / metaprogram the prompt at runtime? The `flavors` argument is an attempt at this, but it goes against the design goals of the package because it's a hardcoded behavior.
-- chain of thought, and other common intelligence patterns. How can it be expressed by composing fructose functions together vs needing to bake it into
-- context and persistence, how do users best carry context for prior calls through to future calls? do we even want that?
+- dynamic system prompts. How can users change / modify / metaprogram the prompt at runtime? The `flavors` argument is an attempt at this, but it goes against the design goals of the package because it's a hardcoded behavior. Do we even want that?
+- chain of thought, and other common intelligence patterns. How can it be expressed by composing fructose functions together vs needing to hardcode the behavior into the package.
+- context and persistence, how do users best carry context for prior calls through to future calls? do we even want that? 
 
 Please include example python code for how you'd prefer the interaction to behave, and explain where the current package design falls short.
 
