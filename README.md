@@ -5,13 +5,13 @@
 
 Fructose is a python package to create a dependable, strongly-typed interface around an LLM call.
 
-Just slap the `@ai()` decorator on a type-annotated function and call it as you would a function. It's lightweight, syntactic sugar.
+Just slap the `@ai` decorator on a type-annotated function and call it as you would a function. It's lightweight, syntactic sugar.
 
 ``` python
 from fructose import Fructose
 ai = Fructose()
 
-@ai()
+@ai
 def describe(animals: list[str]) -> str:
   """
   Given a list of animals, use one word that'd describe them all.
@@ -21,7 +21,7 @@ def describe(animals: list[str]) -> str:
 description = describe(["dog", "cat", "parrot", "goldfish"])
 print(description) # -> "pets" type: str
 ```
-The `@ai()` decorator introspects the function and builds a prompt to an LLM to perform the task whenever the function is invoked.
+The `@ai` decorator introspects the function and builds a prompt to an LLM to perform the task whenever the function is invoked.
 
 Fructose supports:
 - args, kwargs, and return types
@@ -63,7 +63,7 @@ class Person:
     height: float
     is_human: bool
 
-@ai()
+@ai
 def generate_fake_person_data() -> Person:
   """
     Generate fake data for a cliche aspiring author
@@ -76,7 +76,7 @@ print(person)
 
 ## Local Function Calling
 
-Fructose `ai()` functions can choose to call local Python functions. Yes, even other `@ai()` functions.
+Fructose `@ai` functions can choose to call local Python functions. Yes, even other `@ai` functions.
 
 Pass the functions into the decorator with the `uses` argument: `@ai(uses = [func_1, func_2])`
 
