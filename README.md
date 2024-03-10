@@ -124,20 +124,40 @@ And supports arguments of basic types:
 
 # Config
 
-Most config may be set at the decorator level:
-```python
-ai = Fructose(*args, **kwargs)
-```
-or at the function level
-```python
-@ai(*args, **kwargs)
-```
-
 ## Model type
 Select your OpenAI model with the `model` keyword. Defaults to `gpt-4-turbo-preview`
 ```python
 ai = Fructose(model = "gpt-3.5-turbo")
 ```
+
+
+
+## Custom Clients
+You can configure your own OpenAI client and use it with Fructose.
+This allows you to do things like route your calls through proxies or OpenAI-compatible LLM APIs.
+
+```python
+from fructose import Fructose
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="http://my.test.server.example.com:8083",
+    http_client=httpx.Client(
+        proxies="http://my.test.proxy.example.com",
+        transport=httpx.HTTPTransport(local_address="0.0.0.0"),
+    ),
+)
+
+ai = Fructose(client = client)
+```
+
+### Alternative LLM APIs:
+Note that Fructose uses OpenAI's `json` return mode for all calls, and `tools` API for the `uses` function-calling.
+
+Not all alternative LLM providers support these features, and those that do likely exhibit subtle differences in the API.
+
+You're free to point to alternative APIs using a custom client (above) or the `OPENAI_BASE_URL` environment variable, but Fructose does not officially support it.
+
 
 ## Prompting
 Fructose has a lightweight prompt wrapper that "just works" in most cases, but you're free to modify it using the below Flavors and Templates features.
