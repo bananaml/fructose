@@ -31,7 +31,8 @@ class Fructose():
     def __init__(self, client=None, model=DEFAULT_MODEL, system_template_path=None, chain_of_thought_template_path=None, debug=False):
         if client is None:
             client = openai.Client(
-                api_key=os.environ['OPENAI_API_KEY']
+                api_key=os.environ['OPENAI_API_KEY'],
+                base_url=os.environ.get('OPENAI_BASE_URL', None),
             )
         self._client = client
         self._model = model
