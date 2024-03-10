@@ -132,7 +132,7 @@ ai = Fructose(model = "gpt-3.5-turbo")
 
 
 
-## Custom Clients
+## Custom Clients and Alternative APIs
 You can configure your own OpenAI client and use it with Fructose.
 This allows you to do things like route your calls through proxies or OpenAI-compatible LLM APIs.
 
@@ -151,10 +151,7 @@ client = OpenAI(
 ai = Fructose(client = client)
 ```
 
-### Alternative LLM APIs:
-Note that Fructose uses OpenAI's `json` return mode for all calls, and `tools` API for the `uses` function-calling.
-
-Not all alternative LLM providers support these features, and those that do likely exhibit subtle differences in the API.
+Note that Fructose uses OpenAI's `json` return mode for all calls, and `tools` API for the `uses` function-calling. Not all alternative LLM providers support these features, and those that do likely exhibit subtle differences in the API.
 
 You're free to point to alternative APIs using a custom client (above) or the `OPENAI_BASE_URL` environment variable, but Fructose does not officially support it.
 
