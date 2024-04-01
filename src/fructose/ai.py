@@ -5,6 +5,7 @@ from pathlib import Path
 from .llm_function_handler import LLMFunctionHandler
 import openai
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
+import inspect
 
 DEFAULT_MODEL = "gpt-4-turbo-preview"
 # DEFAULT_MODEL = "gpt-3.5-turbo"
@@ -28,35 +29,23 @@ def get_local_template_loader():
     )
 
 HUMAN_BASE_URL = os.getenv("HUMAN_BASE_URL", "https://human-production-571a.up.railway.app/")
+human_first_call = True
 
 # todo:
 import logging
 # logging.basicConfig(level=logging.DEBUG)
 
 class Fructose():
-    def __init__(self, client=None, model=DEFAULT_MODEL, system_template_path=None, chain_of_thought_template_path=None, debug=False, human=False):
-        if human is True:
-            self._client=openai.Client(
-                api_key="not-needed",
-                base_url=HUMAN_BASE_URL,
-                max_retries=0,
+    def __init__(self, client=None, model=DEFAULT_MODEL, system_template_path=None, chain_of_thought_template_path=None, debug=False):
+        if client is None:
+            client = openai.Client(
+                api_key=os.environ['OPENAI_API_KEY']
             )
-            self._model=model
-            self._system_template_path=get_base_template_env().get_template("human_prompt.jinja")
-            self._chain_of_thought_template_path=chain_of_thought_template_path
-            self._debug=debug
-
-            print("You're using human mode!\n\nAre you a human of average general intelligence?\nConsider volunteering your brainpower by answering user queries:\nhttps://discord.gg/YqDn6Dta7t\n")
-        else:
-            if client is None:
-                client = openai.Client(
-                    api_key=os.environ['OPENAI_API_KEY']
-                )
-            self._client = client
-            self._model = model
-            self._system_template_path = system_template_path
-            self._chain_of_thought_template_path = chain_of_thought_template_path
-            self._debug = debug
+        self._client = client
+        self._model = model
+        self._system_template_path = system_template_path
+        self._chain_of_thought_template_path = chain_of_thought_template_path
+        self._debug = debug
 
     def __call__(
             self,
@@ -80,6 +69,31 @@ class Fructose():
                 model=model,
                 debug=debug
             )(func)
+        
+        # TEMP: HUMAN MODE
+        # we introspect callable name to see if human mode is enabled. incredibly hacky
+        global human_first_call
+        if human_first_call:
+            caller_frame = inspect.currentframe().f_back
+            # Look through the local variables of the caller
+            for var_name, var_val in caller_frame.f_locals.items():
+                if var_val is self:
+                    if "human" in var_name:
+                        self._client=openai.Client(
+                            api_key="not-needed",
+                            base_url=HUMAN_BASE_URL,
+                            max_retries=0,
+                        )
+                        self._model=model
+                        self._system_template_path=get_base_template_env().get_template("human_prompt.jinja")
+                        self._chain_of_thought_template_path=chain_of_thought_template_path
+                        self._debug=debug
+                        human_first_call = False
+                        print("You're using human mode!\n\nAre you a human of adequate general intelligence?\nConsider volunteering your brainpower by answering user queries:\nhttps://discord.gg/YqDn6Dta7t\n")
+                        break
+                    else:
+                        human_first_call = False
+                        break
 
         if debug is None:
             debug = self._debug

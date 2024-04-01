@@ -1,6 +1,6 @@
 from fructose import Fructose
 
-human = Fructose(human=True)
+human = Fructose()
 
 @human()
 def repeat(input_str: str) -> str:
@@ -9,7 +9,7 @@ def repeat(input_str: str) -> str:
     """
     ...
 
-# print(repeat("Ahoy"))
+print(repeat("Ahoy"))
 
 
 
