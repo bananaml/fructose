@@ -12,4 +12,3 @@ def repeat(input_str: str) -> str:
 print(repeat("Ahoy"))
 
 
-

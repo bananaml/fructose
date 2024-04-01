@@ -33,15 +33,19 @@ human_first_call = True
 
 class Fructose():
     def __init__(self, client=None, model=DEFAULT_MODEL, system_template_path=None, chain_of_thought_template_path=None, debug=False):
-        if client is None:
-            client = openai.Client(
-                api_key=os.environ['OPENAI_API_KEY']
-            )
+        # TODO: reintroduce below comment
+        # if client is None:
+        #     client = openai.Client(
+        #         api_key=os.getenv('OPENAI_API_KEY', None)
+        #     )
         self._client = client
         self._model = model
         self._system_template_path = system_template_path
         self._chain_of_thought_template_path = chain_of_thought_template_path
         self._debug = debug
+
+        # TODO: remove
+        self._is_human = False
 
     def __call__(
             self,
@@ -66,7 +70,8 @@ class Fructose():
                 debug=debug
             )(func)
         
-        # TEMP: HUMAN MODE
+        # HUMAN MODE
+        # TODO: remove
         # we introspect callable name to see if human mode is enabled. incredibly hacky
         global human_first_call
         if human_first_call:
@@ -85,12 +90,18 @@ class Fructose():
                         self._system_template_path=get_base_template_env().get_template("human_prompt.jinja")
                         self._chain_of_thought_template_path=chain_of_thought_template_path
                         self._debug=debug
+                        self._is_human = True
                         human_first_call = False
                         print("You're using human mode!\n\nAre you a human of adequate general intelligence?\nConsider volunteering your brainpower by answering user queries:\nhttps://discord.gg/YqDn6Dta7t\n")
                         break
                     else:
                         human_first_call = False
                         break
+            if not self._is_human:
+                if self._client is None:
+                    self._client = openai.Client(
+                        api_key=os.getenv('OPENAI_API_KEY', None)
+                    )
 
         if debug is None:
             debug = self._debug
