@@ -48,7 +48,7 @@ class Fructose():
             system_template_path=None,
             chain_of_thought_template_path=None,
             model=None,
-            debug=False,
+            debug=None,
         ):
 
         if func is not None and callable(func):
