@@ -30,7 +30,7 @@ def get_local_template_loader():
 HUMAN_BASE_URL = os.getenv("HUMAN_BASE_URL", "https://human-production-571a.up.railway.app/")
 
 # todo:
-import logging
+# import logging
 # logging.basicConfig(level=logging.DEBUG)
 
 class Fructose():
