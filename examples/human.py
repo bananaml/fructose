@@ -1,7 +1,7 @@
 from fructose import Fructose
-ai = Fructose()
+human = Fructose()
 
-@ai
+@human
 def describe(animals: list[str]) -> str:
   """
   Given a list of animals, use one word that'd describe them all.
