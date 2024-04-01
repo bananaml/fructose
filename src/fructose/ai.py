@@ -31,10 +31,6 @@ def get_local_template_loader():
 HUMAN_BASE_URL = os.getenv("HUMAN_BASE_URL", "https://human-production-571a.up.railway.app/")
 human_first_call = True
 
-# todo:
-import logging
-# logging.basicConfig(level=logging.DEBUG)
-
 class Fructose():
     def __init__(self, client=None, model=DEFAULT_MODEL, system_template_path=None, chain_of_thought_template_path=None, debug=False):
         if client is None:
