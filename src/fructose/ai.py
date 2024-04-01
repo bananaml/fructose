@@ -27,17 +27,34 @@ def get_local_template_loader():
         undefined=StrictUndefined
     )
 
+HUMAN_BASE_URL = "http://localhost:3000"
+
+# todo:
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 class Fructose():
-    def __init__(self, client=None, model=DEFAULT_MODEL, system_template_path=None, chain_of_thought_template_path=None, debug=False):
-        if client is None:
-            client = openai.Client(
-                api_key=os.environ['OPENAI_API_KEY']
+    def __init__(self, client=None, model=DEFAULT_MODEL, system_template_path=None, chain_of_thought_template_path=None, debug=False, human=False):
+        if human is True:
+            self._client=openai.Client(
+                api_key="not-needed",
+                base_url=HUMAN_BASE_URL,
+                max_retries=0,
             )
-        self._client = client
-        self._model = model
-        self._system_template_path = system_template_path
-        self._chain_of_thought_template_path = chain_of_thought_template_path
-        self._debug = debug
+            self._model=model
+            self._system_template_path=get_base_template_env().get_template("human_prompt.jinja")
+            self._chain_of_thought_template_path=chain_of_thought_template_path
+            self._debug=debug
+        else:
+            if client is None:
+                client = openai.Client(
+                    api_key=os.environ['OPENAI_API_KEY']
+                )
+            self._client = client
+            self._model = model
+            self._system_template_path = system_template_path
+            self._chain_of_thought_template_path = chain_of_thought_template_path
+            self._debug = debug
 
     def __call__(
             self,
