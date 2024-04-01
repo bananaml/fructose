@@ -27,11 +27,11 @@ def get_local_template_loader():
         undefined=StrictUndefined
     )
 
-HUMAN_BASE_URL = "http://localhost:3000"
+HUMAN_BASE_URL = os.getenv("HUMAN_BASE_URL", "https://human-production-571a.up.railway.app/")
 
 # todo:
 import logging
-logging.basicConfig(level=logging.DEBUG)
+# logging.basicConfig(level=logging.DEBUG)
 
 class Fructose():
     def __init__(self, client=None, model=DEFAULT_MODEL, system_template_path=None, chain_of_thought_template_path=None, debug=False, human=False):
@@ -45,6 +45,8 @@ class Fructose():
             self._system_template_path=get_base_template_env().get_template("human_prompt.jinja")
             self._chain_of_thought_template_path=chain_of_thought_template_path
             self._debug=debug
+
+            print("You're using human mode!\n\nAre you a human of average general intelligence?\nConsider volunteering your brainpower by answering user queries:\nhttps://discord.gg/YqDn6Dta7t\n")
         else:
             if client is None:
                 client = openai.Client(
