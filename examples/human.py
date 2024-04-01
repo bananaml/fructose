@@ -1,14 +1,12 @@
 from fructose import Fructose
+ai = Fructose()
 
-human = Fructose()
+@ai
+def describe(animals: list[str]) -> str:
+  """
+  Given a list of animals, use one word that'd describe them all.
+  """
+  ...
 
-@human()
-def repeat(input_str: str) -> str:
-    """
-    repeat back the input_str
-    """
-    ...
-
-print(repeat("Ahoy"))
-
-
+description = describe(["dog", "cat", "parrot", "goldfish"])
+print(description) # -> "pets" type: str
