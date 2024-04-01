@@ -74,11 +74,12 @@ class Fructose():
         # we introspect callable name to see if human mode is enabled. incredibly hacky
         global human_first_call
         if human_first_call:
+            # step back one frame and scan all local variables until we find this one
+            # this is how we know the variable name
             caller_frame = inspect.currentframe().f_back
-            # Look through the local variables of the caller
             for var_name, var_val in caller_frame.f_locals.items():
                 if var_val is self:
-                    if "human" in var_name:
+                    if var_name == "human":
                         self._client=openai.Client(
                             api_key="not-needed",
                             base_url=HUMAN_BASE_URL,
