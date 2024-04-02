@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='fructose',
-    version='0.0.11',
+    version='0.0.13',
     packages=["fructose"],
     package_dir={'': 'src'},
     include_package_data=True,
