@@ -1,7 +1,7 @@
 <img width="326" alt="Group 311 (2)" src="https://github.com/bananaml/fructose/assets/44653944/8162425c-a485-460f-b816-bcc6be5d2cef">
 
-
 # LLM calls as strongly-typed functions
+
 
 Fructose is a python package to create a dependable, strongly-typed interface around an LLM call.
 
@@ -31,6 +31,10 @@ Fructose supports:
 - nested types
 - custom prompt templates
 - local function calling
+
+### Under maintenance pause
+We're beyond proud of the excitement for this project following our Hacker News launch, but we've had to direct attention elsewhere. We've paused maintenance on Fructose. If you're looking for a more actively maintained package, check out [Instructor](https://github.com/jxnl/instructor) or [Marvin](https://github.com/prefecthq/marvin). If you love Fructose and would like to build on it yourself, you're more than welcome to fork it for your own version, or open an issue requesting to be a maintainer.
+
 
 # 
 ## Installation
